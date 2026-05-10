@@ -4,218 +4,297 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>PawCast</title>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; margin: 0; -webkit-tap-highlight-color: transparent; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .snap-x { scroll-snap-type: x mandatory; }
+        .snap-start { scroll-snap-align: start; }
+        .transition-all { transition: all 0.3s ease; }
     </style>
 </head>
-<body class="bg-slate-50">
-    <div id="root"></div>
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
-        const Icons = lucide;
+<body class="overflow-x-hidden">
+    <!-- UI Container -->
+    <div id="app" class="max-w-md mx-auto min-h-screen bg-white flex flex-col relative shadow-2xl border-x border-slate-100">
+        
+        <!-- Search Overlay -->
+        <div id="search-overlay" class="fixed inset-0 bg-white z-[100] p-6 pt-20 flex flex-col hidden">
+            <div class="flex justify-between items-center mb-10">
+                <h2 class="text-4xl font-black italic">Location</h2>
+                <button onclick="toggleSearch()" class="p-4 bg-slate-100 rounded-3xl text-slate-500">✕</button>
+            </div>
+            <form id="search-form" class="space-y-4">
+                <input id="search-input" class="w-full bg-slate-100 p-7 rounded-[2rem] font-bold text-xl outline-none border-2 border-transparent focus:border-blue-500" placeholder="City name...">
+                <button type="submit" class="w-full bg-black text-white p-7 rounded-[2rem] font-black text-xl uppercase shadow-xl">Update</button>
+            </form>
+        </div>
 
-        const PawCast = () => {
-            const [weather, setWeather] = useState(null);
-            const [loading, setLoading] = useState(false);
-            const [view, setView] = useState('home');
-            const [locationName, setLocationName] = useState("Hong Kong");
-            const [searchQuery, setSearchQuery] = useState("");
-            const [isSearching, setIsSearching] = useState(false);
-            const [unit, setUnit] = useState('C'); 
-            const [lastUpdated, setLastUpdated] = useState(null);
-            const [coords, setCoords] = useState({ lat: 22.3193, lon: 114.1694 });
-            const scrollRef = useRef(null);
-
-            const formatTemp = (tempC) => unit === 'F' ? Math.round((tempC * 9/5) + 32) : Math.round(tempC);
-
-            const calculateSafety = (tempC, humidity, precipProb, weatherCode, isDaylight, windSpeed) => {
-                const tempF = (tempC * 9/5) + 32;
-                const feelsIndex = Math.round(tempF + (0.55 * (tempF - 58) * (humidity / 100)));
-                const isSunny = [0, 1, 2].includes(weatherCode);
-                const roadTempC = isDaylight && isSunny ? tempC + 22 : tempC + 3;
-                let hazard = "", level = "safe";
-
-                if ([95, 96, 99].includes(weatherCode)) { level = "danger"; hazard = "Thunderstorm"; }
-                else if (windSpeed > 45) { level = "danger"; hazard = "Severe Winds"; }
-                else if (roadTempC >= 52) { level = "danger"; hazard = "Searing Road"; }
-                else if (feelsIndex >= 165) { level = "danger"; hazard = "Extreme Heat"; }
-                else if (precipProb > 70) { level = "avoid"; hazard = "Heavy Rain"; }
-                else if (roadTempC >= 44) { level = "avoid"; hazard = "Hot Pavement"; }
-                else if (feelsIndex >= 152) { level = "avoid"; hazard = "Tropical Heat"; }
-                else if (feelsIndex >= 140 || !isDaylight) { level = "caution"; hazard = !isDaylight ? "Night visibility" : "Rising Indices"; }
-
-                const config = {
-                    danger: { label: 'Danger', gradient: 'from-rose-500 to-red-600', text: 'text-rose-500', light: 'bg-rose-50', icon: 'XCircle' },
-                    avoid: { label: 'Avoid', gradient: 'from-orange-400 to-orange-600', text: 'text-orange-500', light: 'bg-orange-50', icon: 'AlertTriangle' },
-                    caution: { label: 'Caution', gradient: 'from-amber-400 to-amber-500', text: 'text-amber-600', light: 'bg-amber-50', icon: 'Info' },
-                    safe: { label: 'Ideal', gradient: 'from-emerald-400 to-teal-500', text: 'text-emerald-500', light: 'bg-emerald-50', icon: 'CheckCircle' }
-                };
-                return { ...config[level], level, hazard, roadTempC, feelsIndex };
-            };
-
-            const fetchWeather = async (lat, lon, label) => {
-                setLoading(true);
-                try {
-                    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,is_day&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,weather_code,wind_speed_10m,is_day&daily=sunrise,sunset&timezone=auto`);
-                    const data = await res.json();
-                    const now = new Date();
-                    const currentHourStart = new Date(now.setMinutes(0, 0, 0));
-
-                    const hourlyData = data.hourly.time.map((time, i) => {
-                        const itemTime = new Date(time);
-                        const isDay = data.hourly.is_day[i] === 1;
-                        return {
-                            time: itemTime.toLocaleTimeString([], { hour: 'numeric', hour12: true }),
-                            rawTime: itemTime,
-                            isDay,
-                            temp: data.hourly.temperature_2m[i],
-                            humidity: data.hourly.relative_humidity_2m[i],
-                            prob: data.hourly.precipitation_probability[i],
-                            code: data.hourly.weather_code[i],
-                            safety: calculateSafety(data.hourly.temperature_2m[i], data.hourly.relative_humidity_2m[i], data.hourly.precipitation_probability[i], data.hourly.weather_code[i], isDay, data.hourly.wind_speed_10m[i])
-                        };
-                    }).filter(item => item.rawTime >= currentHourStart).slice(0, 12);
-
-                    setWeather({
-                        temp: data.current.temperature_2m,
-                        humidity: data.current.relative_humidity_2m,
-                        code: data.current.weather_code,
-                        isDay: data.current.is_day === 1,
-                        wind: data.current.wind_speed_10m,
-                        sunrise: new Date(data.daily.sunrise[0]).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                        sunset: new Date(data.daily.sunset[0]).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                        hourly: hourlyData
-                    });
-                    if (label) setLocationName(label);
-                    setCoords({ lat, lon });
-                    setLastUpdated(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-                } catch (e) { console.error(e); }
-                setLoading(false);
-            };
-
-            const handleSearch = async (e) => {
-                e.preventDefault();
-                if (!searchQuery.trim()) return;
-                setLoading(true);
-                try {
-                    const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(searchQuery)}&count=1&language=en&format=json`);
-                    const data = await res.json();
-                    if (data.results?.[0]) {
-                        const r = data.results[0];
-                        fetchWeather(r.latitude, r.longitude, `${r.name}, ${r.country}`);
-                        setIsSearching(false);
-                        setSearchQuery("");
-                    }
-                } catch (e) { alert("Search error"); }
-                setLoading(false);
-            };
-
-            useEffect(() => { fetchWeather(coords.lat, coords.lon, locationName); }, []);
-
-            const Icon = ({ name, size = 24, className = "" }) => {
-                const LucideIcon = Icons[name];
-                return LucideIcon ? <LucideIcon size={size} className={className} /> : null;
-            };
-
-            if (loading && !weather) return (
-                <div className="flex flex-col items-center justify-center min-h-screen bg-white text-blue-600 font-black">
-                    Loading PawCast...
+        <!-- Emergency Overlay -->
+        <div id="emergency-overlay" class="fixed inset-0 bg-white z-[150] overflow-y-auto hidden pb-32">
+            <div class="bg-rose-600 p-10 text-white rounded-b-[4rem] shadow-xl">
+                <button onclick="toggleEmergency()" class="mb-8 font-black uppercase text-[10px] bg-white/20 px-6 py-2 rounded-2xl">✕ Close</button>
+                <h2 class="text-6xl font-black italic uppercase tracking-tighter">Urgent</h2>
+                <p class="font-bold text-xl mt-4 opacity-90 italic">Heatstroke Response Guide</p>
+            </div>
+            <div class="p-8 space-y-10">
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-slate-50 p-6 rounded-3xl text-center flex flex-col items-center border border-slate-100"><span class="text-3xl">🥵</span><span class="font-black text-[10px] uppercase text-slate-600 mt-2">Panting</span></div>
+                    <div class="bg-slate-50 p-6 rounded-3xl text-center flex flex-col items-center border border-slate-100"><span class="text-3xl">👅</span><span class="font-black text-[10px] uppercase text-slate-600 mt-2">Red Gums</span></div>
+                    <div class="bg-slate-50 p-6 rounded-3xl text-center flex flex-col items-center border border-slate-100"><span class="text-3xl">🌀</span><span class="font-black text-[10px] uppercase text-slate-600 mt-2">Unstable</span></div>
+                    <div class="bg-slate-50 p-6 rounded-3xl text-center flex flex-col items-center border border-slate-100"><span class="text-3xl">🤮</span><span class="font-black text-[10px] uppercase text-slate-600 mt-2">Vomiting</span></div>
                 </div>
-            );
+                <div class="space-y-4">
+                    <h3 class="text-xl font-black uppercase italic border-l-4 border-blue-500 pl-4">First Aid</h3>
+                    <div class="bg-blue-50 p-6 rounded-[2.5rem] flex gap-5 items-center border border-blue-100"><span class="text-3xl font-black text-blue-600 italic">01</span><span class="font-bold text-slate-700">Shade or AC immediately.</span></div>
+                    <div class="bg-blue-50 p-6 rounded-[2.5rem] flex gap-5 items-center border border-blue-100"><span class="text-3xl font-black text-blue-600 italic">02</span><span class="font-bold text-slate-700">Wet fur (cool water).</span></div>
+                    <div class="bg-blue-50 p-6 rounded-[2.5rem] flex gap-5 items-center border border-blue-100"><span class="text-3xl font-black text-blue-600 italic">03</span><span class="font-bold text-slate-700">Increase Airflow.</span></div>
+                    <div class="bg-blue-50 p-6 rounded-[2.5rem] flex gap-5 items-center border border-blue-100"><span class="text-3xl font-black text-blue-600 italic">04</span><span class="font-bold text-slate-700 uppercase">Call Vet Now.</span></div>
+                </div>
+            </div>
+        </div>
 
-            return (
-                <div className="max-w-md mx-auto min-h-screen relative bg-white overflow-hidden shadow-2xl flex flex-col">
-                    {isSearching && (
-                        <div className="absolute inset-0 bg-white/98 z-[60] p-6 backdrop-blur-xl flex flex-col pt-20">
-                            <div className="flex justify-between items-center mb-10">
-                                <h2 className="text-4xl font-black">Location</h2>
-                                <button onClick={() => setIsSearching(false)} className="p-4 bg-slate-100 rounded-3xl"><Icon name="X" /></button>
+        <!-- Main Content Area -->
+        <div class="flex-1 overflow-y-auto scrollbar-hide pb-40">
+            <!-- Status/Refresh Bar -->
+            <div class="px-8 pt-6 pb-2 flex justify-between items-end bg-white">
+                <div class="flex flex-col">
+                    <span class="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Open-Meteo Source</span>
+                    <span id="sync-time" class="text-[10px] font-bold text-slate-400">Syncing...</span>
+                </div>
+                <button onclick="refreshData()" class="p-2 bg-slate-50 rounded-xl active:rotate-180 transition-all text-blue-600 border border-slate-100">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.8.8 6.7 2.2L21 8M21 3v5h-5"/></svg>
+                </button>
+            </div>
+
+            <!-- Header Card -->
+            <div class="p-6 pb-12 rounded-b-[4rem] border-b border-slate-100 bg-white">
+                <div class="flex justify-between items-start mb-8 px-2">
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-2">
+                            <div class="bg-blue-600 p-1.5 rounded-lg text-white">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20a2 2 0 1 0 4 0 2 2 0 1 0-4 0M5 16a2 2 0 1 0 4 0 2 2 0 1 0-4 0M15 16a2 2 0 1 0 4 0 2 2 0 1 0-4 0M8 9c0-1.7 1.3-3 3-3s3 1.3 3 3c0 .8-.3 1.5-.8 2-.5.5-1.2.8-2.2.8s-1.7-.3-2.2-.8c-.5-.5-.8-1.2-.8-2Z"/></svg>
                             </div>
-                            <form onSubmit={handleSearch} className="space-y-6">
-                                <input autoFocus type="text" placeholder="Enter City..." className="w-full bg-slate-100 rounded-[2.5rem] py-7 px-8 font-black text-xl outline-none" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-                                <button type="submit" className="w-full bg-slate-900 text-white py-7 rounded-[2.5rem] font-black text-xl">Search</button>
-                            </form>
+                            <h1 class="text-2xl font-black italic text-slate-900">PawCast</h1>
                         </div>
-                    )}
+                        <button onclick="toggleSearch()" class="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-full text-[10px] font-black text-slate-500 border border-slate-100 uppercase">
+                            📍 <span id="current-loc">Hong Kong</span>
+                        </button>
+                    </div>
+                    <button id="unit-toggle" onclick="toggleUnit()" class="bg-slate-100 px-4 py-2 rounded-xl text-xs font-black border border-slate-200 shadow-inner text-slate-600">°C</button>
+                </div>
 
-                    <div className="flex-1 overflow-y-auto scrollbar-hide pb-32">
-                        <div className="bg-white p-6 pb-12 rounded-b-[4rem] border-b border-slate-100">
-                            <div className="flex justify-between items-start mb-6">
-                                <div className="space-y-1">
-                                    <div className="flex items-center gap-2">
-                                        <div className="bg-blue-600 p-2 rounded-xl text-white"><Icon name="PawPrint" /></div>
-                                        <h1 className="text-2xl font-black">PawCast</h1>
-                                    </div>
-                                    <button onClick={() => setIsSearching(true)} className="flex items-center gap-2 bg-slate-50 px-3 py-1 rounded-full text-[10px] font-black text-slate-500 uppercase">
-                                        <Icon name="MapPin" size={12} className="text-blue-500" /> {locationName}
-                                    </button>
-                                </div>
-                                <div className="flex bg-slate-100 p-1 rounded-2xl">
-                                    {['C', 'F'].map(u => (
-                                        <button key={u} onClick={() => setUnit(u)} className={`px-4 py-2 text-xs font-black rounded-xl transition-all ${unit === u ? 'bg-white text-blue-600 shadow-md' : 'text-slate-400'}`}>°{u}</button>
-                                    ))}
-                                </div>
-                            </div>
+                <div class="flex flex-col items-center">
+                    <div class="flex items-start mb-6">
+                        <span id="main-temp" class="text-[9.5rem] font-black tracking-tighter leading-none text-slate-900">--°</span>
+                        <div id="main-icon" class="mt-10 ml-2 bg-white p-4 rounded-3xl shadow-xl border border-slate-50"></div>
+                    </div>
 
-                            <div className="flex flex-col items-center">
-                                <div className="flex items-start mb-4">
-                                    <span className="text-[8rem] font-black tracking-tighter leading-none">{formatTemp(weather.temp)}°</span>
-                                    <div className="mt-8 ml-2">
-                                        <div className="w-14 h-14 bg-white rounded-3xl flex items-center justify-center shadow-xl border border-slate-50">
-                                            <Icon name={weather.code >= 60 ? 'CloudRain' : weather.isDay ? 'Sun' : 'Moon'} className={weather.isDay ? 'text-amber-500' : 'text-indigo-400'} size={28} />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex gap-4 mb-8">
-                                    <div className="bg-amber-50 px-3 py-1 rounded-full text-[10px] font-black text-amber-800 border border-amber-100 flex items-center gap-1"><Icon name="Sunrise" size={14}/> {weather.sunrise}</div>
-                                    <div className="bg-indigo-50 px-3 py-1 rounded-full text-[10px] font-black text-indigo-800 border border-indigo-100 flex items-center gap-1"><Icon name="Sunset" size={14}/> {weather.sunset}</div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4 w-full px-2">
-                                    <div className="bg-slate-900 text-white p-5 rounded-[2.5rem] shadow-xl text-center">
-                                        <p className="text-[10px] font-black uppercase text-blue-400 mb-1">Safety Index</p>
-                                        <p className="text-3xl font-black italic">{weather.hourly[0].safety.feelsIndex}</p>
-                                    </div>
-                                    <div className="bg-white border-2 border-slate-100 p-5 rounded-[2.5rem] text-center">
-                                        <p className="text-[10px] font-black uppercase text-slate-400 mb-1">Road Heat</p>
-                                        <p className="text-3xl font-black text-slate-800">{formatTemp(weather.hourly[0].safety.roadTempC)}°</p>
-                                    </div>
-                                </div>
+                    <div class="flex gap-4 mb-8 text-[10px] font-black uppercase text-slate-400">
+                        <span class="bg-amber-50 px-4 py-2 rounded-full text-amber-700 border border-amber-100 flex items-center gap-1">Rise <span id="rise-time">--:--</span></span>
+                        <span class="bg-indigo-50 px-4 py-2 rounded-full text-indigo-700 border border-indigo-100 flex items-center gap-1">Set <span id="set-time">--:--</span></span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 w-full px-2 mb-6">
+                        <div class="bg-slate-900 text-white p-6 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+                            <p class="text-[10px] font-black uppercase text-blue-400 mb-1 opacity-80 tracking-widest">Safety Index</p>
+                            <p id="main-idx" class="text-4xl font-black italic">--</p>
+                            <div class="w-full h-1 bg-white/10 mt-4 rounded-full overflow-hidden">
+                                <div id="idx-bar" class="bg-blue-400 h-full transition-all duration-1000" style="width:0%"></div>
                             </div>
                         </div>
-
-                        <div className="mx-6 -mt-8 relative z-20">
-                            <div className={`bg-gradient-to-br ${weather.hourly[0].safety.gradient} rounded-[3rem] p-8 shadow-2xl text-white`}>
-                                <h2 className="text-[10px] font-black uppercase opacity-70 mb-1">{weather.hourly[0].safety.hazard || "Normal"}</h2>
-                                <p className="text-5xl font-black italic uppercase leading-none mb-4">{weather.hourly[0].safety.label}</p>
-                                <p className="font-bold opacity-95">Environment is analysed. Indices are within subtropical tolerance.</p>
-                            </div>
-                        </div>
-
-                        <div className="mt-12 px-6 overflow-x-auto">
-                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 ml-2">12h Timeline</h3>
-                            <div className="flex gap-4 pb-4">
-                                {weather.hourly.map((h, i) => (
-                                    <div key={i} className={`min-w-[110px] p-5 rounded-[2.5rem] border flex flex-col items-center shadow-sm ${h.safety.level === 'safe' ? 'bg-emerald-50 border-emerald-100' : 'bg-white border-slate-100'}`}>
-                                        <span className="text-[9px] font-black text-slate-400 uppercase mb-4">{h.time}</span>
-                                        <Icon name={h.code >= 60 ? 'CloudRain' : h.isDay ? 'Sun' : 'Moon'} size={24} className={h.isDay ? 'text-amber-500' : 'text-indigo-400'} />
-                                        <p className="mt-4 text-xl font-black">{formatTemp(h.temp)}°</p>
-                                        <p className={`text-[8px] font-black uppercase ${h.safety.text}`}>{h.safety.label}</p>
-                                    </div>
-                                ))}
+                        <div class="bg-white border-2 border-slate-100 p-6 rounded-[2.5rem] shadow-sm relative overflow-hidden text-center">
+                            <p class="text-[10px] font-black uppercase text-slate-400 mb-1 tracking-widest">Road Heat</p>
+                            <p id="main-road" class="text-4xl font-black text-slate-800 italic">--°</p>
+                            <div class="w-full h-1 bg-slate-100 mt-4 rounded-full overflow-hidden">
+                                <div id="road-bar" class="bg-orange-400 h-full transition-all duration-1000" style="width:0%"></div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="fixed bottom-6 left-6 right-6 bg-white/80 backdrop-blur-2xl border border-white/50 px-8 py-5 flex justify-between items-center rounded-[2.5rem] shadow-2xl">
-                        <button className="flex flex-col items-center gap-1 text-blue-600"><Icon name="Waves"
-                                                                                               
+                    <div class="grid grid-cols-3 gap-3 w-full px-2">
+                        <div class="bg-slate-50/50 border border-slate-100 p-4 rounded-3xl flex flex-col items-center">
+                            <span class="text-blue-500 mb-2">💧</span>
+                            <span class="text-[8px] font-black text-slate-400 uppercase mb-1">Humid</span>
+                            <span id="main-hum" class="text-sm font-black text-slate-800">--%</span>
+                        </div>
+                        <div class="bg-slate-50/50 border border-slate-100 p-4 rounded-3xl flex flex-col items-center">
+                            <span class="text-slate-500 mb-2">💨</span>
+                            <span class="text-[8px] font-black text-slate-400 uppercase mb-1">Wind</span>
+                            <span id="main-wind" class="text-sm font-black text-slate-800">--</span>
+                        </div>
+                        <div class="bg-slate-50/50 border border-slate-100 p-4 rounded-3xl flex flex-col items-center">
+                            <span class="text-indigo-400 mb-2">☔</span>
+                            <span class="text-[8px] font-black text-slate-400 uppercase mb-1">Rain</span>
+                            <span id="main-rain" class="text-sm font-black text-slate-800">--%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Banner -->
+            <div class="mx-6 -mt-10 z-20 relative">
+                <div id="safety-banner" class="bg-gradient-to-br from-slate-200 to-slate-300 rounded-[3rem] p-8 shadow-2xl text-white">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="space-y-1">
+                            <h2 id="hazard-label" class="text-[10px] font-black uppercase opacity-80 tracking-widest">Checking...</h2>
+                            <p id="safety-level" class="text-5xl font-black italic uppercase leading-none">WAIT</p>
+                        </div>
+                        <div id="banner-icon" class="bg-white/20 p-4 rounded-3xl backdrop-blur-xl"></div>
+                    </div>
+                    <p class="text-sm font-bold opacity-95 leading-relaxed italic">Analyzing subtropical balance for your pet's metabolic needs.</p>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="mt-12 px-6">
+                <div class="flex justify-between items-center mb-6 ml-2">
+                    <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">12h Cycle</h3>
+                    <div class="flex items-center gap-1"><span class="text-[9px] font-black text-blue-500 uppercase">Swipe</span> <span class="text-blue-500">→</span></div>
+                </div>
+                <div id="timeline" class="flex gap-4 overflow-x-auto pb-8 scrollbar-hide snap-x">
+                    <!-- Hourly items will be injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Bar -->
+        <div class="fixed bottom-6 left-6 right-6 bg-white/80 backdrop-blur-2xl border border-white/50 px-10 py-5 flex justify-between items-center rounded-[2.5rem] shadow-2xl z-[50]">
+            <button onclick="setView('home')" class="flex flex-col items-center gap-1 text-blue-600 scale-110">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                <span class="text-[8px] font-black uppercase">Live</span>
+            </button>
+            <button onclick="toggleEmergency()" class="flex flex-col items-center gap-1 text-slate-300 opacity-60">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/></svg>
+                <span class="text-[8px] font-black uppercase">Urgent</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- GLOBALS ---
+        let currentUnit = 'C';
+        let currentCoords = { lat: 22.3193, lon: 114.1694 };
+        let currentLocation = "Hong Kong";
+        let weatherData = null;
+
+        const icons = {
+            sun: `<svg class="text-amber-500" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>`,
+            moon: `<svg class="text-indigo-400" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>`,
+            rain: `<svg class="text-blue-400" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 13a4 4 0 0 0-8 0"/><path d="M8 16v.01M12 16v.01M16 16v.01M8 20v.01M12 20v.01M16 20v.01"/></svg>`,
+            check: `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>`,
+            alert: `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>`
+        };
+
+        function calculateSafety(tempC, hum, code, isDay, wind) {
+            const tempF = tempC * 9/5 + 32;
+            const idx = Math.round(tempF + (0.55 * (tempF - 58) * (hum / 100)));
+            const road = isDay && [0,1,2].includes(code) ? tempC + 23 : tempC + 4;
+            
+            let lvl = "safe", hz = "", grad = "from-emerald-400 to-teal-500";
+            if ([95,96,99].includes(code) || wind > 45 || road >= 52 || idx >= 165) {
+                lvl = "danger"; hz = wind > 45 ? "High Wind" : road >= 52 ? "Road Burn" : "Extreme Heat";
+                grad = "from-rose-500 to-red-600";
+            } else if (idx >= 152 || road >= 44) {
+                lvl = "avoid"; hz = road >= 44 ? "Hot Pavement" : "Heat Stress";
+                grad = "from-orange-400 to-orange-600";
+            } else if (idx >= 140) {
+                lvl = "caution"; hz = "Humid";
+                grad = "from-amber-400 to-amber-500";
+            }
+            return { lvl, hz, grad, road, idx };
+        }
+
+        async function fetchWeather(lat, lon, name) {
+            document.getElementById('sync-time').innerText = "Syncing...";
+            try {
+                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,is_day&hourly=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,precipitation_probability,is_day&daily=sunrise,sunset&timezone=auto`);
+                const d = await res.json();
+                weatherData = d;
+                currentCoords = { lat, lon };
+                if (name) { currentLocation = name; document.getElementById('current-loc').innerText = name; }
+                updateUI();
+            } catch(e) { alert("Data fetch failed."); }
+        }
+
+        function updateUI() {
+            const d = weatherData;
+            const now = new Date();
+            const startHour = new Date(now.setMinutes(0,0,0));
+            const formatF = (c) => currentUnit === 'F' ? Math.round(c * 9/5 + 32) : Math.round(c);
+
+            // Current state
+            const safety = calculateSafety(d.current.temperature_2m, d.current.relative_humidity_2m, d.current.weather_code, d.current.is_day === 1, d.current.wind_speed_10m);
+            
+            document.getElementById('main-temp').innerText = formatF(d.current.temperature_2m) + "°";
+            document.getElementById('sync-time').innerText = "Sync: " + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+            document.getElementById('rise-time').innerText = new Date(d.daily.sunrise[0]).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+            document.getElementById('set-time').innerText = new Date(d.daily.sunset[0]).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+            document.getElementById('main-idx').innerText = safety.idx;
+            document.getElementById('idx-bar').style.width = Math.min(safety.idx / 1.8, 100) + "%";
+            document.getElementById('main-road').innerText = formatF(safety.road) + "°";
+            document.getElementById('road-bar').style.width = Math.min(safety.road * 2, 100) + "%";
+            document.getElementById('main-hum').innerText = d.current.relative_humidity_2m + "%";
+            document.getElementById('main-wind').innerText = Math.round(d.current.wind_speed_10m) + "k/h";
+            document.getElementById('main-rain').innerText = d.hourly.precipitation_probability[0] + "%";
+            
+            // Banner
+            const banner = document.getElementById('safety-banner');
+            banner.className = `bg-gradient-to-br ${safety.grad} rounded-[3rem] p-8 shadow-2xl text-white transition-all`;
+            document.getElementById('hazard-label').innerText = safety.hz || "Ideal Range";
+            document.getElementById('safety-level').innerText = safety.lvl;
+            document.getElementById('banner-icon').innerHTML = safety.lvl === 'safe' ? icons.check : icons.alert;
+            document.getElementById('main-icon').innerHTML = d.current.weather_code >= 60 ? icons.rain : d.current.is_day ? icons.sun : icons.moon;
+
+            // Timeline
+            const timeline = document.getElementById('timeline');
+            timeline.innerHTML = "";
+            d.hourly.time.forEach((t, i) => {
+                const rawT = new Date(t);
+                if (rawT < startHour || i > 12) return;
+                const hT = d.hourly.temperature_2m[i];
+                const hH = d.hourly.relative_humidity_2m[i];
+                const hS = calculateSafety(hT, hH, d.hourly.weather_code[i], d.hourly.is_day[i] === 1, d.hourly.wind_speed_10m[i]);
+                const card = document.createElement('div');
+                card.className = `min-w-[130px] p-6 rounded-[2.5rem] border snap-start flex flex-col items-center shadow-sm transition-all ${hS.lvl==='safe'?'bg-emerald-50 border-emerald-100':'bg-white border-slate-100'}`;
+                card.innerHTML = `
+                    <span class="text-[9px] font-black text-slate-400 uppercase mb-4 italic">${rawT.toLocaleTimeString([],{hour:'numeric'})}</span>
+                    <div class="mb-4">${d.hourly.weather_code[i] >= 60 ? icons.rain : d.hourly.is_day[i] ? icons.sun : icons.moon}</div>
+                    <div class="text-center mb-5">
+                        <p class="text-xl font-black text-slate-900">${formatF(hT)}°</p>
+                        <p class="text-[8px] font-black uppercase ${hS.lvl === 'safe' ? 'text-emerald-500' : 'text-slate-400'}">${hS.lvl}</p>
+                    </div>
+                    <div class="w-full pt-4 border-t border-slate-100 space-y-2 text-[9px] font-black text-slate-400">
+                        <div class="flex justify-between"><span>Idx</span><span class="text-blue-500">${hS.idx}</span></div>
+                        <div class="flex justify-between"><span>Road</span><span class="text-orange-500">${formatF(hS.road)}°</span></div>
+                        <div class="flex justify-between"><span>Hum</span><span class="text-blue-300">${hH}%</span></div>
+                    </div>
+                `;
+                timeline.appendChild(card);
+            });
+        }
+
+        function toggleUnit() { currentUnit = currentUnit === 'C' ? 'F' : 'C'; document.getElementById('unit-toggle').innerText = '°' + currentUnit; updateUI(); }
+        function toggleSearch() { document.getElementById('search-overlay').classList.toggle('hidden'); }
+        function toggleEmergency() { document.getElementById('emergency-overlay').classList.toggle('hidden'); }
+        function refreshData() { fetchWeather(currentCoords.lat, currentCoords.lon, currentLocation); }
+
+        document.getElementById('search-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const val = document.getElementById('search-input').value;
+            if (!val) return;
+            const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(val)}&count=1`);
+            const d = await res.json();
+            if (d.results?.[0]) {
+                fetchWeather(d.results[0].latitude, d.results[0].longitude, d.results[0].name);
+                toggleSearch();
+            } else { alert("Not found"); }
+        };
+
+        // Init
+        fetchWeather(22.3193, 114.1694, "Hong Kong");
+    </script>
+</body>
+</html>
