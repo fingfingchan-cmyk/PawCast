@@ -3,30 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- PWA Meta Tags -->
+    <!-- PWA / Native App Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PawCast">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#2563eb">
+    <meta name="theme-color" content="#ffffff">
     <title>PawCast</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; margin: 0; color: #0f172a; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; margin: 0; color: #0f172a; -webkit-tap-highlight-color: transparent; text-align: left; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         .hero-gradient { background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent); }
         .transition-all { transition: all 0.3s ease-out; }
         .snap-x { scroll-snap-type: x mandatory; }
         .snap-start { scroll-snap-align: start; }
-        #urgent-overlay, #search-overlay { z-index: 999; }
+        #urgent-overlay, #search-overlay { z-index: 9999 !important; }
     </style>
 </head>
 <body class="overflow-x-hidden">
-    <div id="app" class="max-w-md mx-auto min-h-screen bg-white flex flex-col relative shadow-2xl border-x border-slate-100 text-left">
+    <div id="app" class="max-w-md mx-auto min-h-screen bg-white flex flex-col relative shadow-2xl border-x border-slate-100">
         
-        <!-- PWA / Settings UI -->
+        <!-- Search UI -->
         <div id="search-overlay" class="fixed inset-0 bg-white hidden flex flex-col p-6 pt-20 overflow-y-auto">
             <div class="flex justify-between items-center mb-10 px-2">
                 <h2 class="text-4xl font-black italic tracking-tighter">Settings</h2>
@@ -34,7 +33,7 @@
             </div>
             
             <form id="search-form" class="space-y-4 px-2 mb-12">
-                <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">New Location</p>
+                <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Location Search</p>
                 <input id="search-input" class="w-full bg-slate-100 p-7 rounded-[2.5rem] font-bold text-xl outline-none border-2 border-transparent focus:border-blue-500 transition-all shadow-inner" placeholder="Enter City Name...">
                 <button type="submit" class="w-full bg-blue-600 text-white p-7 rounded-[2.5rem] font-black text-xl uppercase shadow-xl active:scale-95 transition-all">Update Grid</button>
             </form>
@@ -44,56 +43,56 @@
                     <div class="w-14 h-14 bg-blue-600 rounded-2xl mx-auto flex items-center justify-center text-white mb-4 shadow-lg">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
                     </div>
-                    <h3 class="text-xl font-black mb-1 italic">Native Mode</h3>
-                    <p class="text-xs text-slate-400 mb-6 px-4">Install PawCast on your home screen for full-screen mode and faster safety biometrics.</p>
-                    <button onclick="alert('iOS: Tap Share > Add to Home Screen\nAndroid: Tap ⋮ (top right) > Install App or Add to Home Screen')" class="w-full bg-white text-slate-900 py-5 rounded-[2rem] font-black text-xs uppercase tracking-widest active:scale-95 shadow-lg">Install App</button>
+                    <h3 class="text-xl font-black mb-1 italic text-white">Native Mode</h3>
+                    <p class="text-xs text-slate-400 mb-6 px-4">Add to Home Screen for full-screen mode and faster safety biometric access.</p>
+                    <button onclick="alert('iOS: Tap Share > Add to Home Screen\nAndroid: Tap ⋮ (top right) > Install App')" class="w-full bg-white text-slate-900 py-5 rounded-[2rem] font-black text-xs uppercase tracking-widest active:scale-95 shadow-lg">Install App</button>
                 </div>
             </div>
         </div>
 
-        <!-- URGENT OVERLAY (Restored Full 6 Symptoms) -->
+        <!-- URGENT OVERLAY -->
         <div id="urgent-overlay" class="fixed inset-0 bg-white hidden flex flex-col overflow-y-auto pb-32">
             <div class="bg-rose-600 p-10 text-white rounded-b-[4rem] shadow-xl pt-20 text-left">
                 <button onclick="toggleUrgent()" class="mb-8 font-black uppercase text-[10px] bg-white/20 px-6 py-2 rounded-2xl active:scale-90">✕ Close</button>
-                <h2 class="text-6xl font-black italic uppercase leading-none tracking-tighter">Urgent</h2>
-                <p class="font-bold text-xl mt-2 opacity-90 italic">Heatstroke Protocol</p>
+                <h2 class="text-6xl font-black italic uppercase leading-none tracking-tighter text-white">Urgent</h2>
+                <p class="font-bold text-xl mt-2 opacity-90 italic text-white">Heatstroke Response</p>
             </div>
             
             <div class="p-8 space-y-10 text-left">
                 <div class="space-y-4">
                     <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Key Warning Signs</h3>
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-slate-50 p-6 rounded-3xl text-center border border-slate-100"><span class="text-4xl">🥵</span><p class="font-black text-[10px] uppercase text-slate-600 mt-4">Panting</p></div>
-                        <div class="bg-slate-50 p-6 rounded-3xl text-center border border-slate-100"><span class="text-4xl">👅</span><p class="font-black text-[10px] uppercase text-slate-600 mt-4">Red Gums</p></div>
-                        <div class="bg-slate-50 p-6 rounded-3xl text-center border border-slate-100"><span class="text-4xl">🌀</span><p class="font-black text-[10px] uppercase text-slate-600 mt-4">Instability</p></div>
-                        <div class="bg-slate-50 p-6 rounded-3xl text-center border border-slate-100"><span class="text-4xl">🤮</span><p class="font-black text-[10px] uppercase text-slate-600 mt-4">Vomiting</p></div>
-                        <div class="bg-slate-50 p-6 rounded-3xl text-center border border-slate-100"><span class="text-4xl">😵‍💫</span><p class="font-black text-[10px] uppercase text-slate-600 mt-4">Lethargy</p></div>
-                        <div class="bg-slate-50 p-6 rounded-3xl text-center border border-slate-100"><span class="text-4xl">⚠️</span><p class="font-black text-[10px] uppercase text-slate-600 mt-4">Seizures</p></div>
+                        <div class="bg-slate-50 p-6 rounded-3xl text-center border border-slate-100 shadow-sm"><span class="text-4xl">🥵</span><p class="font-black text-[10px] uppercase text-slate-600 mt-4">Panting</p></div>
+                        <div class="bg-slate-50 p-6 rounded-3xl text-center border border-slate-100 shadow-sm"><span class="text-4xl">👅</span><p class="font-black text-[10px] uppercase text-slate-600 mt-4">Red Gums</p></div>
+                        <div class="bg-slate-50 p-6 rounded-3xl text-center border border-slate-100 shadow-sm"><span class="text-4xl">🌀</span><p class="font-black text-[10px] uppercase text-slate-600 mt-4">Instability</p></div>
+                        <div class="bg-slate-50 p-6 rounded-3xl text-center border border-slate-100 shadow-sm"><span class="text-4xl">🤮</span><p class="font-black text-[10px] uppercase text-slate-600 mt-4">Vomiting</p></div>
+                        <div class="bg-slate-50 p-6 rounded-3xl text-center border border-slate-100 shadow-sm"><span class="text-4xl">😵‍💫</span><p class="font-black text-[10px] uppercase text-slate-600 mt-4">Lethargy</p></div>
+                        <div class="bg-slate-50 p-6 rounded-3xl text-center border border-slate-100 shadow-sm"><span class="text-4xl">⚠️</span><p class="font-black text-[10px] uppercase text-slate-600 mt-4">Seizures</p></div>
                     </div>
                 </div>
 
                 <div class="space-y-4">
-                    <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Response Steps</h3>
-                    <div class="bg-blue-50 p-7 rounded-[2.5rem] flex gap-5 items-center border border-blue-100 shadow-sm"><span class="text-3xl font-black text-blue-600 italic leading-none">01</span><span class="font-bold text-slate-700 leading-snug">Move to deep shade or AC immediately.</span></div>
-                    <div class="bg-blue-50 p-7 rounded-[2.5rem] flex gap-5 items-center border border-blue-100 shadow-sm"><span class="text-3xl font-black text-blue-600 italic leading-none">02</span><span class="font-bold text-slate-700 leading-snug italic">Saturate fur with cool water (NOT ice).</span></div>
-                    <div class="bg-blue-50 p-7 rounded-[2.5rem] flex gap-5 items-center border border-blue-100 shadow-sm"><span class="text-3xl font-black text-blue-600 italic leading-none">03</span><span class="font-bold text-slate-700 leading-snug underline decoration-rose-500">CALL EMERGENCY VET NOW.</span></div>
+                    <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1 text-left">Response Protocol</h3>
+                    <div class="bg-blue-50 p-7 rounded-[2.5rem] flex gap-5 items-center border border-blue-100 shadow-sm"><span class="text-3xl font-black text-blue-600 italic leading-none">01</span><span class="font-bold text-slate-700 leading-snug text-left">Move to deep shade or AC immediately.</span></div>
+                    <div class="bg-blue-50 p-7 rounded-[2.5rem] flex gap-5 items-center border border-blue-100 shadow-sm"><span class="text-3xl font-black text-blue-600 italic leading-none">02</span><span class="font-bold text-slate-700 leading-snug italic text-left">Saturate fur with cool water (NOT ice).</span></div>
+                    <div class="bg-blue-50 p-7 rounded-[2.5rem] flex gap-5 items-center border border-blue-100 shadow-sm"><span class="text-3xl font-black text-blue-600 italic leading-none">03</span><span class="font-bold text-slate-700 leading-snug underline decoration-rose-500 text-left">CALL EMERGENCY VET NOW.</span></div>
                 </div>
             </div>
         </div>
 
         <!-- Dashboard -->
         <div class="flex-1 overflow-y-auto scrollbar-hide pb-40 hero-gradient">
-            <div class="px-8 pt-8 pb-2 flex justify-between items-end relative z-10">
+            <div class="px-8 pt-8 pb-2 flex justify-between items-end relative z-10 text-left">
                 <div class="flex flex-col text-left">
-                    <span class="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-1">Open-Meteo V28 Stable</span>
-                    <span id="sync-time" class="text-[11px] font-bold text-slate-400 italic">Syncing Grid...</span>
+                    <span id="station-label" class="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-1">Station: Loading...</span>
+                    <span id="sync-time" class="text-[11px] font-bold text-slate-400 italic">Connecting Grid...</span>
                 </div>
                 <button onclick="refreshData()" class="p-3 bg-white rounded-2xl border border-slate-100 shadow-lg active:scale-90 transition-all text-blue-600">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.8.8 6.7 2.2L21 8M21 3v5h-5"/></svg>
                 </button>
             </div>
 
-            <!-- Header Card -->
+            <!-- Main Header Card -->
             <div class="p-6 pb-12 rounded-b-[4.5rem] border-b border-slate-100 bg-white relative z-10 shadow-sm">
                 <div class="flex justify-between items-start mb-10 px-2 text-left">
                     <div class="space-y-3">
@@ -101,13 +100,14 @@
                             <div class="bg-blue-600 p-2.5 rounded-2xl text-white shadow-xl">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 20a2 2 0 1 0 4 0 2 2 0 1 0-4 0M5 16a2 2 0 1 0 4 0 2 2 0 1 0-4 0M15 16a2 2 0 1 0 4 0 2 2 0 1 0-4 0M8 9c0-1.7 1.3-3 3-3s3 1.3 3 3c0 .8-.3 1.5-.8 2-.5.5-1.2.8-2.2.8s-1.7-.3-2.2-.8c-.5-.5-.8-1.2-.8-2Z"/></svg>
                             </div>
-                            <h1 class="text-3xl font-black italic tracking-tighter">PawCast</h1>
+                            <h1 class="text-3xl font-black italic tracking-tighter text-slate-900">PawCast</h1>
                         </div>
-                        <button onclick="toggleSearch()" class="flex items-center gap-2 bg-slate-50 px-5 py-2.5 rounded-full text-[11px] font-black text-slate-500 border border-slate-100 uppercase tracking-widest active:bg-slate-100 transition-all">
-                            📍 <span id="current-loc">Syncing...</span>
+                        <button onclick="initAutoLoc()" class="flex items-center gap-2 bg-slate-50 px-5 py-2.5 rounded-full text-[11px] font-black text-slate-500 border border-slate-100 uppercase tracking-widest active:bg-slate-100 transition-all group">
+                            <span id="loc-indicator">📍</span> <span id="current-loc">Locating...</span>
+                            <span class="opacity-0 group-active:opacity-100 text-[8px] ml-2 text-blue-500 transition-all">GPS RE-SCAN</span>
                         </button>
                     </div>
-                    <button id="unit-toggle" onclick="toggleUnit()" class="bg-slate-50 px-5 py-3 rounded-2xl text-[11px] font-black border border-slate-100 shadow-sm text-slate-600">°C</button>
+                    <button id="unit-toggle" onclick="toggleUnit()" class="bg-slate-50 px-5 py-3 rounded-2xl text-[11px] font-black border border-slate-100 shadow-sm text-slate-600 active:scale-90">°C</button>
                 </div>
 
                 <div class="flex flex-col items-center">
@@ -118,10 +118,10 @@
 
                     <div class="flex gap-5 mb-12">
                         <div class="flex items-center gap-2 bg-amber-50 px-5 py-2.5 rounded-full text-amber-700 border border-amber-100 text-[11px] font-black uppercase shadow-sm">
-                            <span class="opacity-40 tracking-tighter">Rise</span> <span id="rise-time" class="text-slate-800 italic font-bold tracking-tighter">--:--</span>
+                            <span class="opacity-40 tracking-tighter">Rise</span> <span id="rise-time" class="text-slate-800 font-bold tracking-tighter italic">--:--</span>
                         </div>
                         <div class="flex items-center gap-2 bg-indigo-50 px-5 py-2.5 rounded-full text-indigo-700 border border-indigo-100 text-[11px] font-black uppercase shadow-sm">
-                            <span class="opacity-40 tracking-tighter">Set</span> <span id="set-time" class="text-slate-800 italic font-bold tracking-tighter">--:--</span>
+                            <span class="opacity-40 tracking-tighter">Set</span> <span id="set-time" class="text-slate-800 font-bold tracking-tighter italic">--:--</span>
                         </div>
                     </div>
 
@@ -131,7 +131,7 @@
                             <p id="main-idx" class="text-5xl font-black italic tracking-tighter text-left">--</p>
                             <div class="w-full h-2 bg-white/10 mt-6 rounded-full overflow-hidden shadow-inner"><div id="idx-bar" class="bg-blue-400 h-full transition-all duration-1000" style="width:0%"></div></div>
                         </div>
-                        <div class="bg-white border-2 border-slate-100 p-8 rounded-[3.5rem] shadow-sm relative overflow-hidden text-left">
+                        <div class="bg-white border-2 border-slate-100 p-8 rounded-[3.5rem] shadow-sm relative overflow-hidden text-left group">
                             <p class="text-[11px] font-black uppercase text-slate-400 mb-2 tracking-widest leading-none text-left italic">Road Heat</p>
                             <p id="main-road" class="text-5xl font-black text-slate-800 italic tracking-tighter text-left">--°</p>
                             <div class="w-full h-2 bg-slate-100 mt-6 rounded-full overflow-hidden shadow-inner"><div id="road-bar" class="bg-orange-400 h-full transition-all duration-1000" style="width:0%"></div></div>
@@ -141,12 +141,12 @@
                     <div class="grid grid-cols-3 gap-4 w-full px-2 text-center text-slate-800">
                         <div class="bg-slate-50/50 border border-slate-100 p-6 rounded-[2rem] flex flex-col items-center shadow-sm"><span class="text-2xl mb-2 drop-shadow-sm">💧</span><span id="main-hum" class="text-base font-black tracking-tighter">--%</span></div>
                         <div class="bg-slate-50/50 border border-slate-100 p-6 rounded-[2rem] flex flex-col items-center shadow-sm"><span class="text-2xl mb-2 drop-shadow-sm">💨</span><span id="main-wind" class="text-base font-black tracking-tighter">--</span></div>
-                        <div class="bg-slate-50/50 border border-slate-100 p-6 rounded-[2rem] flex flex-col items-center shadow-sm text-indigo-500"><span class="text-2xl mb-2 text-indigo-400 font-bold drop-shadow-sm">☔</span><span id="main-rain" class="text-base font-black tracking-tighter">--%</span></div>
+                        <div class="bg-slate-50/50 border border-slate-100 p-6 rounded-[2rem] flex flex-col items-center shadow-sm text-indigo-500"><span class="text-2xl mb-2 font-bold text-indigo-400 drop-shadow-sm">☔</span><span id="main-rain" class="text-base font-black tracking-tighter text-indigo-500">--%</span></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Dynamic Result Banner -->
+            <!-- Banner -->
             <div class="mx-6 -mt-10 z-20 relative text-left">
                 <div id="safety-banner" class="bg-gradient-to-br from-slate-200 to-slate-300 rounded-[3.5rem] p-10 shadow-2xl text-white transition-all transform">
                     <div class="flex justify-between items-start mb-6">
@@ -195,6 +195,35 @@
             alert: `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/></svg>`
         };
 
+        // --- ANDROID PWA ---
+        (function initPWA() {
+            const manifest = { "name": "PawCast", "short_name": "PawCast", "start_url": ".", "display": "standalone", "background_color": "#ffffff", "theme_color": "#2563eb", "icons": [{ "src": "https://cdn-icons-png.flaticon.com/512/107/107831.png", "sizes": "512x512", "type": "image/png" }] };
+            const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+            const link = document.createElement('link'); link.rel = 'manifest'; link.href = URL.createObjectURL(blob);
+            document.head.appendChild(link);
+        })();
+
+        // --- AUTOMATED LOCATION ENGINE ---
+        async function initAutoLoc() {
+            document.getElementById('current-loc').innerText = "Locating...";
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (pos) => {
+                    const lat = pos.coords.latitude, lon = pos.coords.longitude;
+                    try {
+                        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/get?latitude=${lat}&longitude=${lon}`);
+                        const d = await res.json();
+                        fetchWeather(lat, lon, d.name || "Local Grid", d.timezone || "auto");
+                        document.getElementById('loc-indicator').innerText = "🛰️";
+                    } catch(e) { fallbackLoc(); }
+                }, () => fallbackLoc());
+            } else { fallbackLoc(); }
+        }
+
+        function fallbackLoc() {
+            fetchWeather(22.3193, 114.1694, "Hong Kong", "Asia/Hong_Kong");
+            document.getElementById('loc-indicator').innerText = "📍";
+        }
+
         function getStationLocalTime(isoStr) {
             if (!isoStr) return "--:--";
             const parts = isoStr.split('T')[1].split(':');
@@ -204,29 +233,29 @@
             return `${h}:${parts[1]} ${ampm}`;
         }
 
-        // --- CONTEXTUAL SAFETY ENGINE ---
         function calculateSafety(tempC, hum, code, isDay) {
             const tempF = tempC * 9/5 + 32;
             const road = isDay && [0,1,2].includes(code) ? tempC + 23 : tempC + 4;
             const heatScore = Math.round(tempF + (hum * 0.6));
-            let lvl = "safe", hz = "", grad = "from-emerald-400 to-teal-500", txt = "Ideal Range", idxLabel = "Safety Index";
+            let lvl = "safe", hz = "", grad = "from-emerald-400 to-teal-500", txt = "Ideal Conditions", idxLabel = "Safety Index";
 
             if (tempC < 0) {
                 lvl = "avoid"; grad = "from-blue-400 to-indigo-600"; hz = "Freezing Pad Risk";
-                txt = "COLD: Freezing surface. Ice salt or burns may damage pads. Avoid walks.";
+                txt = "COLD: Freezing air. Protect pads from salt and ice burn. Avoid walks.";
                 idxLabel = "Frost Risk";
+                if (tempC < -10) { lvl = "danger"; grad = "from-blue-600 to-slate-900"; hz = "Severe Cold"; txt = "DANGER: Hypothermia risk. Do not walk."; }
                 return { lvl, hz, grad, road, idx: Math.abs(Math.round(tempC * 10)), txt, idxLabel };
             }
 
             if (heatScore >= 158 || tempC > 31 || road >= 50) {
-                lvl = "danger"; grad = "from-rose-500 to-red-600"; hz = road >= 50 ? "Road Burn" : "Metabolic Overload";
-                txt = "ALARM: High risk of heatstroke. Stop activity.";
+                lvl = "danger"; grad = "from-rose-500 to-red-600"; hz = "Metabolic Overload";
+                txt = "ALARM: Extreme heatstroke risk. Stay indoors.";
             } else if (heatScore >= 143 || tempC > 29 || road >= 43) {
-                lvl = "avoid"; grad = "from-orange-400 to-orange-600"; hz = road >= 43 ? "Hot Surface" : "Tropical Heat";
-                txt = "CAUTION: Indices reaching risk limits. Stay on grass.";
+                lvl = "avoid"; grad = "from-orange-400 to-orange-600"; hz = "Hot Surface";
+                txt = "CAUTION: Indices reaching limits. Stay on grass.";
             } else if (heatScore >= 130 || tempC > 26) {
                 lvl = "caution"; grad = "from-amber-400 to-amber-500"; hz = "Warm Air";
-                txt = "NOTICE: Monitor for signs of heavy panting.";
+                txt = "NOTICE: Monitor for heavy panting.";
             }
             return { lvl, hz, grad, road, idx: heatScore, txt, idxLabel };
         }
@@ -235,30 +264,27 @@
             const syncEl = document.getElementById('sync-time');
             syncEl.innerText = "Syncing Grid...";
             try {
-                // VERIFIED V23 STABLE ENGINE (Removed illegal 'time' from current block)
+                // FIXED V23 URL ENGINE
                 const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,is_day&hourly=temperature_2m,relative_humidity_2m,weather_code,precipitation_probability,is_day&daily=sunrise,sunset&timezone=${encodeURIComponent(tz)}&forecast_days=2`;
                 const res = await fetch(url);
-                if (!res.ok) throw new Error();
                 const d = await res.json();
-                
                 weatherData = d;
-                currentLocation = name; currentTimezone = tz;
+                currentLocation = name;
                 document.getElementById('current-loc').innerText = name;
+                document.getElementById('station-label').innerText = "Station: " + (name === "Hong Kong" ? "Default HK" : "Local Grid");
                 renderUI();
                 syncEl.innerText = "Sync: OK";
-            } catch(e) { syncEl.innerText = "Sync Failed - Retry"; }
+            } catch(e) { syncEl.innerText = "Sync Failed"; }
         }
 
         function renderUI() {
             if (!weatherData) return;
-            const d = weatherData;
-            const cur = d.current;
+            const d = weatherData, cur = d.current;
             const fmt = (c) => currentUnit === 'F' ? Math.round(c * 9/5 + 32) : Math.round(c);
             
-            // TIMELINE PRECISION MATCHING
-            // Find current hour in the hourly array to skip 00:00 - 12:00
-            const currentHourMarker = cur.time.split(':')[0] + ":00";
-            const startIndex = d.hourly.time.findIndex(t => t.startsWith(currentHourMarker));
+            // TIMELINE MATCHING (Fixes 00:00 start)
+            const stationHour = cur.time.split(':')[0] + ":00";
+            const startIndex = d.hourly.time.findIndex(t => t.startsWith(stationHour));
             const safeStart = startIndex >= 0 ? startIndex : 0;
 
             const safety = calculateSafety(cur.temperature_2m, cur.relative_humidity_2m, cur.weather_code, cur.is_day === 1);
@@ -282,14 +308,13 @@
             document.getElementById('banner-icon').innerHTML = safety.lvl === 'safe' ? icons.check : icons.alert;
             document.getElementById('main-icon').innerHTML = cur.temperature_2m < 0 ? icons.snow : cur.weather_code >= 60 ? icons.rain : cur.is_day ? icons.sun : icons.moon;
 
-            const timeline = document.getElementById('timeline');
-            timeline.innerHTML = "";
+            const timeline = document.getElementById('timeline'); timeline.innerHTML = "";
             for(let i = safeStart; i < safeStart + 12 && i < d.hourly.time.length; i++) {
                 const hT = d.hourly.temperature_2m[i], hH = d.hourly.relative_humidity_2m[i], hC = d.hourly.weather_code[i], hD = d.hourly.is_day[i] === 1;
                 const hS = calculateSafety(hT, hH, hC, hD);
                 const card = document.createElement('div');
-                card.className = `min-w-[155px] p-8 rounded-[3rem] border snap-start flex flex-col items-center shadow-sm transition-all ${hS.lvl==='safe'?'bg-emerald-50 border-emerald-100 ring-4 ring-emerald-500/5':'bg-white border-slate-100'}`;
-                card.innerHTML = `<span class="text-[10px] font-black text-slate-400 uppercase mb-5 italic text-left w-full">${getStationLocalTime(d.hourly.time[i])}</span><div class="mb-6 scale-90">${hT < 0 ? icons.snow : hC >= 60 ? icons.rain : hD ? icons.sun : icons.moon}</div><div class="text-center mb-8"><p class="text-3xl font-black text-slate-900">${fmt(hT)}°</p><p class="text-[9px] font-black uppercase mt-1 ${hS.lvl === 'safe' ? 'text-emerald-500' : 'text-slate-400'}">${hS.lvl}</p></div><div class="w-full pt-6 border-t border-slate-100 space-y-3 text-[10px] font-black text-slate-400 text-left"><div class="flex justify-between items-center"><span class="opacity-30 uppercase text-[8px]">Idx</span><span class="text-blue-500 font-bold">${hS.idx}</span></div><div class="flex justify-between items-center"><span class="opacity-30 uppercase text-[8px]">Road</span><span class="text-orange-500 font-bold">${fmt(hS.road)}°</span></div><div class="flex justify-between items-center"><span class="opacity-30 uppercase text-[8px]">Hum</span><span class="text-blue-300 font-bold">${hH}%</span></div></div>`;
+                card.className = `min-w-[155px] p-8 rounded-[3rem] border snap-start flex flex-col items-center shadow-sm transition-all ${hS.lvl==='safe'?'bg-emerald-50 border-emerald-100':'bg-white border-slate-100'}`;
+                card.innerHTML = `<span class="text-[10px] font-black text-slate-400 uppercase mb-5 italic text-left w-full">${getStationLocalTime(d.hourly.time[i])}</span><div class="mb-6 scale-90">${hT < 0 ? icons.snow : hC >= 60 ? icons.rain : hD ? icons.sun : icons.moon}</div><div class="text-center mb-8"><p class="text-3xl font-black text-slate-900">${fmt(hT)}°</p><p class="text-[9px] font-black uppercase mt-1 ${hS.lvl === 'safe' ? 'text-emerald-500' : 'text-slate-400'}">${hS.lvl}</p></div><div class="w-full pt-6 border-t border-slate-100 space-y-3 text-[10px] font-black text-slate-400 text-left"><div class="flex justify-between items-center"><span class="opacity-30 uppercase text-[8px]">Idx</span><span class="text-blue-500 font-bold">${hS.idx}</span></div><div class="flex justify-between items-center"><span class="opacity-30 uppercase text-[8px]">Road</span><span class="text-orange-500 font-bold">${fmt(hS.road)}°</span></div></div>`;
                 timeline.appendChild(card);
             }
         }
@@ -306,15 +331,15 @@
                 const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(val)}&count=1`);
                 const d = await res.json();
                 if (d.results?.[0]) { 
-                    const loc = d.results[0];
-                    fetchWeather(loc.latitude, loc.longitude, loc.name, loc.timezone);
+                    fetchWeather(d.results[0].latitude, d.results[0].longitude, d.results[0].name, d.results[0].timezone);
                     toggleSearch();
                     document.getElementById('search-input').value = "";
                 }
             } catch(e) { }
         };
 
-        fetchWeather(22.3193, 114.1694, "Hong Kong", "Asia/Hong_Kong");
+        // Start Auto Location
+        initAutoLoc();
     </script>
 </body>
 </html>
