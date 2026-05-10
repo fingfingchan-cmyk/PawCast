@@ -7,7 +7,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PawCast">
-    <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#ffffff">
     <title>PawCast</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -30,9 +29,9 @@
         
         <!-- Startup Loader -->
         <div id="loc-loader" class="fixed inset-0 bg-white z-[10000] flex flex-col items-center justify-center p-10 text-center transition-opacity duration-500">
-            <div class="w-16 h-16 border-[2px] border-blue-600 border-t-transparent rounded-full animate-spin mb-6"></div>
+            <div class="w-16 h-16 border-[1.5px] border-blue-600 border-t-transparent rounded-full animate-spin mb-6"></div>
             <h2 class="text-xl font-bold tracking-tighter text-slate-900 uppercase">PawCast</h2>
-            <p class="text-[9px] text-slate-400 mt-2 font-black uppercase tracking-[0.4em]">Syncing Safety Grid</p>
+            <p class="text-[9px] text-slate-400 mt-2 font-black uppercase tracking-[0.4em]">Syncing Precision Grid</p>
         </div>
 
         <!-- Setup Overlay -->
@@ -40,35 +39,35 @@
             <div class="flex justify-between items-start mb-10 px-2 text-left">
                 <div>
                     <h2 class="text-4xl font-black italic tracking-tighter text-slate-900">Setup</h2>
-                    <p class="text-[9px] font-black text-blue-500 uppercase tracking-widest mt-1 italic">Manual Override</p>
+                    <p class="text-[9px] font-black text-blue-500 uppercase tracking-widest mt-1 italic">V4.1.0 Solar Logic</p>
                 </div>
                 <button onclick="toggleSearch()" class="p-4 bg-slate-50 rounded-3xl text-slate-400 active:scale-90 transition-transform">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
                 </button>
             </div>
             
             <form id="search-form" class="space-y-4 px-2 mb-10 text-left">
-                <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Location Search</p>
+                <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Manual Grid Search</p>
                 <input id="search-input" class="w-full bg-slate-50 p-7 rounded-[2.5rem] font-bold text-xl outline-none border-2 border-transparent focus:border-blue-500 transition-all shadow-inner" placeholder="City name...">
                 <button type="submit" class="w-full bg-slate-900 text-white p-7 rounded-[2.5rem] font-black text-xl uppercase shadow-xl active:scale-95 transition-all">Update Grid</button>
             </form>
 
             <div class="px-2 mb-10 text-left">
-                <div class="bg-slate-50 p-8 rounded-[3.5rem] border border-slate-100">
+                <div class="bg-slate-50 p-8 rounded-[3.5rem] border border-slate-100 shadow-sm">
                     <h3 class="text-xl font-black mb-1 italic text-slate-900">Native Mode</h3>
-                    <p class="text-xs text-slate-400 mb-6">Install PawCast for full-screen mode and instant safety biometric access.</p>
-                    <button onclick="triggerPWAInstall()" class="w-full bg-white border border-slate-200 text-slate-900 py-5 rounded-[2rem] font-black text-xs uppercase tracking-widest active:scale-95 shadow-sm">Install App</button>
+                    <p class="text-xs text-slate-400 mb-6">Install PawCast to your home screen for full-screen mode and faster safety checks.</p>
+                    <button onclick="triggerPWAInstall()" class="w-full bg-white border border-slate-200 text-slate-900 py-5 rounded-[2rem] font-black text-xs uppercase tracking-widest active:scale-95">Install Now</button>
                 </div>
             </div>
 
             <div class="mt-auto text-center pb-10">
-                <p class="text-[10px] font-black text-slate-200 uppercase tracking-[0.3em]">Build v4.0.0 Stable</p>
+                <p class="text-[10px] font-black text-slate-200 uppercase tracking-[0.3em]">Build v4.1.0 Stable</p>
             </div>
         </div>
 
         <!-- URGENT OVERLAY -->
         <div id="urgent-overlay" class="fixed inset-0 bg-white hidden flex flex-col overflow-y-auto pb-32">
-            <div class="bg-rose-600 p-10 text-white rounded-b-[4rem] shadow-xl pt-20 text-left">
+            <div class="bg-rose-600 p-10 text-white rounded-b-[4rem] shadow-xl pt-20 text-left border-b border-rose-700">
                 <button onclick="toggleUrgent()" class="mb-8 font-black uppercase text-[10px] bg-white/20 px-6 py-2 rounded-2xl active:scale-90 transition-transform">✕ Close</button>
                 <h2 class="text-6xl font-black italic uppercase leading-none tracking-tighter text-white">Urgent</h2>
                 <p class="font-bold text-xl mt-2 opacity-90 italic text-white">Heatstroke Protocol</p>
@@ -76,7 +75,7 @@
             
             <div class="p-8 space-y-10 text-left">
                 <div class="space-y-4">
-                    <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Critical Warning Signs</h3>
+                    <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Critical Signs</h3>
                     <div class="grid grid-cols-2 gap-3 text-center">
                         <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 shadow-sm"><span class="text-4xl">🥵</span><p class="font-black text-[10px] uppercase text-slate-600 mt-4">Panting</p></div>
                         <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 shadow-sm"><span class="text-4xl">👅</span><p class="font-black text-[10px] uppercase text-slate-600 mt-4">Red Gums</p></div>
@@ -100,21 +99,20 @@
         <div class="flex-1 overflow-y-auto scrollbar-hide pb-40 hero-gradient">
             <div class="px-8 pt-8 pb-2 flex justify-between items-end relative z-10 text-left">
                 <div class="flex flex-col text-left">
-                    <span id="v-label" class="text-[9px] font-black text-slate-300 uppercase tracking-[0.3em] mb-1 italic">V23 Station Grid</span>
-                    <span id="sync-time" class="text-[10px] font-bold text-slate-400 italic">Syncing...</span>
+                    <span id="v-label" class="text-[9px] font-black text-slate-300 uppercase tracking-[0.3em] mb-1 italic">V4 Thermal Precision</span>
+                    <span id="sync-time" class="text-[10px] font-bold text-slate-400 italic">Connecting...</span>
                 </div>
             </div>
 
             <!-- Header Hero -->
-            <div class="p-6 pb-12 rounded-b-[4rem] border-b border-slate-100 bg-white relative z-10 shadow-sm text-center">
+            <div class="p-6 pb-12 rounded-b-[4.5rem] border-b border-slate-100 bg-white relative z-10 shadow-sm text-center">
                 <div class="flex justify-between items-start mb-10 px-2 text-left">
                     <div class="space-y-3 text-left">
                         <div class="flex items-center gap-3">
-                            <!-- FIXED LOGO CONTAINER: White background ensures 🐾 is visible -->
-                            <div class="bg-white w-11 h-11 rounded-2xl flex items-center justify-center text-white shadow-xl border border-slate-100 text-2xl">
+                            <div class="bg-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-xl border border-slate-50 text-2xl">
                                 🐾
                             </div>
-                            <h1 class="text-3xl font-black italic tracking-tighter text-slate-900 leading-none mt-1">PawCast</h1>
+                            <h1 class="text-3xl font-black italic tracking-tighter text-slate-900 mt-1">PawCast</h1>
                         </div>
                         <div class="flex items-center gap-2 bg-slate-50 px-5 py-2.5 rounded-full text-[11px] font-black text-slate-500 border border-slate-100 uppercase tracking-widest shadow-sm">
                             <span id="loc-icon">📍</span> <span id="current-loc">Syncing...</span>
@@ -159,17 +157,17 @@
                 </div>
             </div>
 
-            <!-- Recommendation -->
+            <!-- Recommendation Banner -->
             <div class="mx-6 -mt-10 z-20 relative text-left">
                 <div id="safety-banner" class="bg-gradient-to-br from-slate-200 to-slate-300 rounded-[3.5rem] p-10 shadow-2xl text-white transition-all transform text-left border border-white/20">
                     <div class="flex justify-between items-start mb-6">
                         <div class="space-y-1">
                             <h2 id="hazard-label" class="text-[10px] font-black uppercase opacity-80 tracking-[0.25em]">Syncing...</h2>
-                            <p id="safety-level" class="text-6xl font-black italic uppercase leading-none tracking-tighter text-left">WAIT</p>
+                            <p id="safety-level" class="text-6xl font-black italic uppercase leading-none tracking-tighter text-left text-white">WAIT</p>
                         </div>
                         <div id="banner-icon" class="bg-white/20 p-5 rounded-[2rem] border border-white/20 shadow-inner flex items-center justify-center"></div>
                     </div>
-                    <p id="safety-text" class="text-base font-bold opacity-95 leading-relaxed italic px-1 text-left italic">Analyzing metabolic safety grid...</p>
+                    <p id="safety-text" class="text-base font-bold opacity-95 leading-relaxed italic px-1 text-left italic">Analyzing metropolitan safety grid...</p>
                 </div>
             </div>
 
@@ -182,32 +180,29 @@
             </div>
         </div>
 
-        <!-- INTEGRATED 4-BUTTON THIN DOCK -->
+        <!-- THIN-ICON INTEGRATED DOCK -->
         <div class="fixed bottom-6 left-6 right-6 dock-blur px-2 py-4 flex justify-around items-center rounded-[3rem] shadow-2xl z-[50]">
             
-            <!-- GPS (Thin) -->
             <button onclick="initAutoLoc()" class="flex flex-col items-center gap-1 text-slate-400 active:text-blue-600 transition-all w-16">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                 <span class="text-[8px] font-black uppercase tracking-widest mt-0.5">GPS</span>
             </button>
             
-            <!-- SYNC (Thin) -->
             <button onclick="refreshData()" class="flex flex-col items-center gap-1 text-slate-400 active:text-blue-600 transition-all w-16">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.8.8 6.7 2.2L21 8M21 3v5h-5"/></svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.8.8 6.7 2.2L21 8M21 3v5h-5"/></svg>
                 <span class="text-[8px] font-black uppercase tracking-widest mt-0.5">Sync</span>
             </button>
 
-            <!-- SETUP (Thin Sliders) -->
+            <!-- MODERN THIN SLIDERS -->
             <button onclick="toggleSearch()" class="flex flex-col items-center gap-1 text-slate-400 active:text-blue-600 transition-all w-16">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 11V3M2 14h4M10 8h4M18 11h4"/>
                 </svg>
                 <span class="text-[8px] font-black uppercase tracking-widest mt-0.5">Setup</span>
             </button>
             
-            <!-- URGENT (Thin) -->
             <button onclick="toggleUrgent()" class="flex flex-col items-center gap-1 text-rose-500 active:scale-95 transition-all w-16">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><circle cx="12" cy="17" r=".01"/></svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><circle cx="12" cy="17" r=".01"/></svg>
                 <span class="text-[8px] font-black uppercase tracking-widest mt-0.5">Urgent</span>
             </button>
         </div>
@@ -217,14 +212,14 @@
         let currentUnit = 'C', currentCoords = { lat: 22.3193, lon: 114.1694 }, currentLocation = "Hong Kong", weatherData = null, deferredPrompt = null;
 
         const icons = {
-            sun: `<svg class="text-amber-500" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>`,
-            cloud: `<svg class="text-slate-400" width="48" height="48" viewBox="-2 -2 28 28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 0-9h-1.3a7 7 0 1 0-13.7 3h1a4.5 4.5 0 0 0 0 9h14z"/></svg>`,
-            fog: `<svg class="text-slate-300" width="48" height="48" viewBox="-2 -2 28 28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h16M4 14h16M6 18h12M8 6h8"/></svg>`,
-            moon: `<svg class="text-indigo-400" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>`,
-            rain: `<svg class="text-blue-400" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 10h-1.3a7 7 0 1 0-13.7 3h1M16 13a4 4 0 0 0-8 0M8 16v.01M12 16v.01M16 16v.01M8 20v.01M12 20v.01M16 20v.01"/></svg>`,
-            snow: `<svg class="text-blue-200" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93-14.14 14.14"/></svg>`,
-            check: `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`,
-            alert: `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><circle cx="12" cy="17" r=".01"/></svg>`
+            sun: `<svg class="text-amber-500" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>`,
+            cloud: `<svg class="text-slate-400" width="48" height="48" viewBox="-2 -2 28 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 0-9h-1.3a7 7 0 1 0-13.7 3h1a4.5 4.5 0 0 0 0 9h14z"/></svg>`,
+            fog: `<svg class="text-slate-300" width="48" height="48" viewBox="-2 -2 28 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h16M4 14h16M6 18h12M8 6h8"/></svg>`,
+            moon: `<svg class="text-indigo-400" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>`,
+            rain: `<svg class="text-blue-400" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 10h-1.3a7 7 0 1 0-13.7 3h1M16 13a4 4 0 0 0-8 0M8 16v.01M12 16v.01M16 16v.01M8 20v.01M12 20v.01M16 20v.01"/></svg>`,
+            snow: `<svg class="text-blue-200" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93-14.14 14.14"/></svg>`,
+            check: `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`,
+            alert: `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/></svg>`
         };
 
         (function initPWA() {
@@ -237,7 +232,7 @@
 
         function triggerPWAInstall() {
             if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then(() => { deferredPrompt = null; }); }
-            else { alert('iOS Safari: Share > Add to Home Screen\nAndroid Chrome: ⋮ > Install App'); }
+            else { alert('iOS: Share > Add to Home Screen\nAndroid: ⋮ > Install App'); }
         }
 
         async function initAutoLoc() {
@@ -270,9 +265,22 @@
             return `${h}:${parts[1]} ${ampm}`;
         }
 
-        function calculateSafety(tempC, hum, code, isDay) {
+        function calculateSafety(tempC, hum, code, isDay, stationTimeStr) {
             const tempF = tempC * 9/5 + 32;
-            const road = isDay && [0,1,2].includes(code) ? tempC + 23 : tempC + 4;
+            
+            // --- NEW SOLAR INTENSITY ENGINE ---
+            // Road heat peak at 1 PM, near zero at night/dawn
+            const hour = stationTimeStr ? parseInt(stationTimeStr.split('T')[1].split(':')[0]) : 12;
+            // Intensity curve: 0 at night, up to 1.0 at 1 PM (13:00)
+            const hourDist = Math.abs(hour - 13);
+            let solarFactor = Math.max(0, 1 - (hourDist / 7)); // Zero before 6 AM or after 8 PM
+            
+            // Weather Factor: Clouds block thermal radiation
+            const cloudFactor = (code >= 1 && code <= 3) ? 0.4 : (code >= 60 ? 0.2 : 1.0);
+            
+            // Formula: Base Air Temp + (Intensity * CloudBlock * 23 max delta)
+            const road = isDay ? tempC + (solarFactor * cloudFactor * 23) + 2 : tempC + 4;
+            
             const heatScore = Math.round(tempF + (hum * 0.6));
             let lvl = "safe", hz = "", grad = "from-emerald-400 to-teal-500", txt = "Ideal Range", idxLabel = "Safety Index";
             
@@ -280,7 +288,6 @@
                 lvl = "avoid"; grad = "from-blue-400 to-indigo-600"; hz = "Freezing Pad Risk";
                 txt = "COLD: Freezing air. Protect pads from salt and ice burn immediately.";
                 idxLabel = "Frost Risk";
-                if (tempC < -10) { lvl = "danger"; grad = "from-blue-600 to-slate-900"; hz = "Severe Cold"; txt = "DANGER: Lethal cold. Core body temp falling."; }
                 return { lvl, hz, grad, road, idx: Math.abs(Math.round(tempC * 10)), txt, idxLabel };
             }
             if (heatScore >= 158 || tempC > 31 || road >= 50) {
@@ -288,7 +295,7 @@
                 txt = "ALARM: Extreme heatstroke risk. Keep dog indoors.";
             } else if (heatScore >= 143 || tempC > 29 || road >= 43) {
                 lvl = "avoid"; grad = "from-orange-400 to-orange-600"; hz = road >= 43 ? "Hot Surface" : "Tropical Heat";
-                txt = "CAUTION: Surface indices reaching risk limits. Stay on grass.";
+                txt = "CAUTION: Surface indices reaching limits. Stay on grass.";
             } else if (heatScore >= 130 || tempC > 26) {
                 lvl = "caution"; grad = "from-amber-400 to-amber-500"; hz = "Warm Air";
                 txt = "NOTICE: Monitor for heavy panting.";
@@ -326,7 +333,8 @@
             const stationTime = cur.time.split(':')[0] + ":00";
             const startIndex = d.hourly.time.findIndex(t => t.startsWith(stationTime));
             const safeStart = startIndex >= 0 ? startIndex : 0;
-            const s = calculateSafety(cur.temperature_2m, cur.relative_humidity_2m, cur.weather_code, cur.is_day === 1);
+
+            const s = calculateSafety(cur.temperature_2m, cur.relative_humidity_2m, cur.weather_code, cur.is_day === 1, cur.time);
             
             document.getElementById('main-temp').innerText = fmt(cur.temperature_2m) + "°";
             document.getElementById('rise-time').innerText = getStationLocalTime(d.daily.sunrise[0]);
@@ -350,7 +358,7 @@
             const timeline = document.getElementById('timeline'); timeline.innerHTML = "";
             for(let i = safeStart; i < safeStart + 12 && i < d.hourly.time.length; i++) {
                 const hT = d.hourly.temperature_2m[i], hH = d.hourly.relative_humidity_2m[i], hC = d.hourly.weather_code[i], hD = d.hourly.is_day[i] === 1;
-                const hS = calculateSafety(hT, hH, hC, hD);
+                const hS = calculateSafety(hT, hH, hC, hD, d.hourly.time[i]);
                 const card = document.createElement('div');
                 card.className = `min-w-[130px] p-6 rounded-[2.5rem] border snap-start flex flex-col items-center shadow-sm transition-all ${hS.lvl==='safe'?'bg-emerald-50 border-emerald-100':'bg-white border-slate-100'}`;
                 card.innerHTML = `<span class="text-[9px] font-black text-slate-400 uppercase mb-4 italic text-left w-full">${getStationLocalTime(d.hourly.time[i])}</span><div class="mb-6 scale-90">${getWeatherIcon(hC, hD)}</div><div class="text-center mb-8"><p class="text-3xl font-black text-slate-900 leading-none">${fmt(hT)}°</p><p class="text-[9px] font-black uppercase mt-1 ${hS.lvl === 'safe' ? 'text-emerald-500' : 'text-slate-400'}">${hS.lvl}</p></div><div class="w-full pt-6 border-t border-slate-100 space-y-3 text-[10px] font-black text-slate-400 text-left"><div class="flex justify-between items-center"><span class="opacity-30 text-[8px]">Idx</span><span class="text-blue-500 font-bold">${hS.idx}</span></div><div class="flex justify-between items-center"><span class="opacity-30 text-[8px]">Road</span><span class="text-orange-500 font-bold">${fmt(hS.road)}°</span></div></div>`;
