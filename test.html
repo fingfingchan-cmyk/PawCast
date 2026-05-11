@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PawCast">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#ffffff">
+    <title>PawCast Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; margin: 0; color: #0f172a; -webkit-tap-highlight-color: transparent; text-align: left; overflow-x: hidden; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .hero-gradient { background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent); }
+        .transition-all { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .snap-x { scroll-snap-type: x mandatory; }
+        .snap-start { scroll-snap-align: start; }
+        #urgent-overlay, #search-overlay, #post-overlay, #loc-loader { z-index: 9999; }
+        .dock-blur { background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-top: 1px solid rgba(0,0,0,0.03); }
+        .view-hidden { display: none !important; }
+        .toast-active { transform: translateY(100px); opacity: 1; }
+        input, select, textarea { -webkit-appearance: none; appearance: none; border-radius: 1.5rem; }
+    </style>
+</head>
+<body>
+    <div id="app" class="max-w-md mx-auto min-h-screen bg-white flex flex-col relative shadow-2xl border-x border-slate-100">
+        
+        <!-- Startup Loader -->
+        <div id="loc-loader" class="fixed inset-0 bg-white z-[10000] flex flex-col items-center justify-center p-10 text-center transition-opacity duration-500">
+            <div class="w-14 h-14 border-[2px] border-blue-600 border-t-transparent rounded-full animate-spin mb-6"></div>
+            <h2 class="text-xl font-bold tracking-tighter text-slate-900 uppercase">PawCast</h2>
+            <p id="loader-text" class="text-[9px] text-slate-400 mt-2 font-black uppercase tracking-[0.4em]">Initializing Grid</p>
+        </div>
+
+        <!-- Custom Toast -->
+        <div id="toast" class="fixed top-[-80px] left-6 right-6 bg-slate-900 text-white p-5 rounded-[2rem] shadow-2xl flex items-center gap-4 transition-all z-[10001] opacity-0 pointer-events-none">
+            <span class="text-xl" id="toast-icon">✨</span>
+            <p class="text-xs font-bold italic" id="toast-msg">Settings updated</p>
+        </div>
+
+        <!-- URGENT OVERLAY -->
+        <div id="urgent-overlay" class="fixed inset-0 bg-white hidden flex flex-col overflow-y-auto pb-32">
+            <div class="bg-rose-600 p-10 text-white rounded-b-[4rem] shadow-xl pt-20 text-left">
+                <button onclick="toggleUrgent()" class="mb-8 font-black uppercase text-[10px] bg-white/20 px-6 py-2 rounded-2xl active:scale-90 transition-transform">✕ Close</button>
+                <h2 class="text-6xl font-black italic uppercase leading-none tracking-tighter text-white">Urgent</h2>
+                <p class="font-bold text-xl mt-2 opacity-90 italic">Heatstroke Protocol</p>
+            </div>
+            
+            <div class="p-8 space-y-10 text-left">
+                <div class="space-y-4">
+                    <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Critical Signs</h3>
+                    <div class="grid grid-cols-2 gap-3 text-center">
+                        <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 shadow-sm"><span class="text-4xl">🥵</span><p class="font-black text-[10px] uppercase text-slate-600 mt-4">Panting</p></div>
+                        <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 shadow-sm"><span class="text-4xl">👅</span><p class="font-black text-[10px] uppercase text-slate-600 mt-4">Red Gums</p></div>
+                        <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 shadow-sm"><span class="text-4xl">🌀</span><p class="font-black text-[10px] uppercase text-slate-600 mt-4">Instability</p></div>
+                        <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 shadow-sm"><span class="text-4xl">⚠️</span><p class="font-black text-[10px] uppercase text-slate-600 mt-4">Seizures</p></div>
+                    </div>
+                </div>
+
+                <div class="space-y-4 text-left">
+                    <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">First Aid</h3>
+                    <div class="bg-blue-50 p-7 rounded-[2.5rem] flex gap-5 items-center border border-blue-100 shadow-sm"><span class="text-3xl font-black text-blue-600 italic leading-none">01</span><span class="font-bold text-slate-700 leading-snug">Move to shade or AC immediately.</span></div>
+                    <div class="bg-blue-50 p-7 rounded-[2.5rem] flex gap-5 items-center border border-blue-100 shadow-sm"><span class="text-3xl font-black text-blue-600 italic leading-none">02</span><span class="font-bold text-slate-700 leading-snug italic">Saturate fur with cool water.</span></div>
+                    <div class="bg-blue-50 p-7 rounded-[2.5rem] flex gap-5 items-center border border-blue-100 shadow-sm"><span class="text-3xl font-black text-blue-600 italic leading-none">03</span><span class="font-bold text-slate-700 leading-snug underline decoration-rose-500">CALL EMERGENCY VET NOW.</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Setup Overlay -->
+        <div id="search-overlay" class="fixed inset-0 bg-white hidden flex flex-col p-6 pt-20 overflow-y-auto">
+            <div class="flex justify-between items-start mb-8 px-2 text-left">
+                <div>
+                    <h2 class="text-4xl font-black italic tracking-tighter text-slate-900">Setup</h2>
+                    <p class="text-[9px] font-black text-blue-500 uppercase tracking-widest mt-1">Config & Community</p>
+                </div>
+                <button onclick="toggleSearch()" class="p-4 bg-slate-50 rounded-3xl text-slate-400 active:scale-90 transition-transform">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <!-- Dog Profile -->
+            <div class="bg-slate-50/80 p-7 rounded-[3.5rem] border border-slate-100 mb-6 mx-2 space-y-6 text-left shadow-sm">
+                <div>
+                    <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1 mb-2">Dog Profile</p>
+                    <p class="text-[11px] font-bold text-slate-500 italic ml-1 mb-4">
+                        Breeds with <span class="text-blue-600">Double Coats</span> or flat faces struggle with heat dissipation. The Index adjusts sensitivity for your pet's biology.
+                    </p>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[9px] font-black uppercase text-slate-400 ml-1">Name</label>
+                        <input id="dog-name" class="w-full bg-white p-5 rounded-3xl font-bold text-sm outline-none border border-slate-100 focus:border-blue-500 transition-all shadow-sm" placeholder="Buddy">
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[9px] font-black uppercase text-slate-400 ml-1">Coat / Build</label>
+                        <select id="dog-coat" class="w-full bg-white p-5 rounded-3xl font-bold text-sm outline-none border border-slate-100 focus:border-blue-500 transition-all shadow-sm">
+                            <option value="1.0" data-label="Standard">Standard Hair</option>
+                            <option value="1.15" data-label="Double Coat">Double Coat</option>
+                            <option value="1.25" data-label="Flat-Faced">Flat-Faced</option>
+                            <option value="0.9" data-label="Short Hair">Short Hair</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="saveProfile()" class="w-full bg-slate-900 text-white p-5 rounded-3xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all shadow-lg">Save Profile</button>
+            </div>
+
+            <!-- INSTALL CARD -->
+            <div id="install-card" class="bg-blue-600 p-8 rounded-[3.5rem] mb-6 mx-2 text-left relative overflow-hidden text-white shadow-xl shadow-blue-100">
+                <div class="relative z-10">
+                    <h3 class="text-xl font-black mb-1 italic">Native App</h3>
+                    <p class="text-xs font-bold opacity-80 mb-6">Install PawCast to your home screen for full-screen mode and faster safety checks.</p>
+                    <button onclick="triggerInstall()" class="w-full bg-white text-blue-600 py-5 rounded-[2rem] font-black text-xs uppercase tracking-widest active:scale-95 shadow-lg">Install Now</button>
+                </div>
+                <div class="absolute -right-4 -bottom-4 opacity-10 scale-150 rotate-12"><svg width="100" height="100" viewBox="0 0 100 100" fill="currentColor"><circle cx="50" cy="50" r="40"/></svg></div>
+            </div>
+            
+            <form id="search-form" class="space-y-4 px-2 mb-10 text-left">
+                <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Location Search</p>
+                <input id="search-input" class="w-full bg-slate-50 p-7 rounded-[2.5rem] font-bold text-xl outline-none border-2 border-transparent focus:border-blue-500 transition-all shadow-inner" placeholder="Search city...">
+                <button type="submit" class="w-full bg-slate-200 text-slate-900 p-7 rounded-[2.5rem] font-black text-xl uppercase active:scale-95 transition-all">Update Grid</button>
+            </form>
+        </div>
+
+        <!-- POST OVERLAY (Detailed) -->
+        <div id="post-overlay" class="fixed inset-0 bg-white hidden flex flex-col p-6 pt-20 overflow-y-auto">
+            <div class="flex justify-between items-start mb-8 px-2 text-left">
+                <div>
+                    <h2 class="text-4xl font-black italic tracking-tighter text-slate-900">Broadcast</h2>
+                    <p class="text-[9px] font-black text-blue-500 uppercase tracking-widest mt-1">Community Grid</p>
+                </div>
+                <button onclick="togglePost()" class="p-4 bg-slate-50 rounded-3xl text-slate-400 active:scale-90 transition-transform">✕</button>
+            </div>
+            <div class="space-y-6 px-2 text-left">
+                <div class="grid grid-cols-2 gap-3">
+                    <button id="type-need" onclick="setPostType('need')" class="bg-blue-600 text-white p-5 rounded-[2rem] font-black text-[10px] uppercase tracking-widest border-2 border-blue-600 shadow-lg transition-all">Need Walk</button>
+                    <button id="type-offer" onclick="setPostType('offer')" class="bg-white text-slate-400 p-5 rounded-[2rem] font-black text-[10px] uppercase tracking-widest border-2 border-slate-100 transition-all">Offering</button>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[9px] font-black uppercase text-slate-400 ml-1">Meet at</label>
+                        <input id="post-location" class="w-full bg-slate-50 p-5 rounded-3xl font-bold text-sm outline-none border border-slate-100 shadow-sm" placeholder="e.g. Park Gate">
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[9px] font-black uppercase text-slate-400 ml-1">Duration</label>
+                        <select id="post-duration" class="w-full bg-slate-50 p-5 rounded-3xl font-bold text-sm outline-none border border-slate-100 shadow-sm">
+                            <option>15 mins</option>
+                            <option>30 mins</option>
+                            <option>1 hour</option>
+                            <option>Flexible</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-3">
+                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Help Details</label>
+                    <textarea id="post-msg" rows="3" class="w-full bg-slate-50 p-6 rounded-[2rem] font-bold text-sm outline-none border border-slate-100 shadow-inner resize-none" placeholder="Add specific instructions..."></textarea>
+                </div>
+                <button onclick="submitPost()" class="w-full bg-slate-900 text-white p-6 rounded-[2.5rem] font-black text-xs uppercase tracking-widest active:scale-95 transition-all shadow-xl">Broadcast to Local Grid</button>
+            </div>
+        </div>
+
+        <!-- MAIN VIEWS -->
+        <div id="safety-view" class="flex-1 overflow-y-auto scrollbar-hide pb-40 hero-gradient">
+            <div class="px-8 pt-8 pb-2 flex justify-between items-end relative z-10 text-left">
+                <div class="flex flex-col text-left">
+                    <span id="v-label" class="text-[9px] font-black text-slate-300 uppercase tracking-[0.3em] mb-1 italic uppercase leading-none">Precision Hub</span>
+                    <span id="sync-time" class="text-[10px] font-bold text-slate-400 italic">Syncing Grid...</span>
+                </div>
+            </div>
+
+            <div class="p-6 pb-12 rounded-b-[4.5rem] border-b border-slate-100 bg-white relative z-10 shadow-sm text-center">
+                <div class="flex justify-between items-start mb-10 px-2 text-left">
+                    <div class="space-y-3 text-left">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-xl border border-slate-50 text-2xl">🐾</div>
+                            <h1 class="text-3xl font-black italic tracking-tighter text-slate-900 mt-1 leading-none">PawCast</h1>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <div class="flex items-center gap-2 bg-slate-50 px-5 py-2.5 rounded-full text-[11px] font-black text-slate-500 border border-slate-100 uppercase tracking-widest max-w-fit">
+                                <span id="loc-icon">📍</span> <span id="current-loc">Syncing...</span>
+                            </div>
+                            <div id="active-profile-badge" class="flex items-center gap-2 bg-blue-50/50 px-4 py-2 rounded-full border border-blue-100/50 max-w-fit shadow-sm">
+                                <span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                                <span id="dash-dog-label" class="text-[10px] font-black text-blue-600 uppercase tracking-widest italic leading-none">Buddy • Standard</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="unit-toggle" onclick="toggleUnit()" class="bg-slate-50 px-5 py-3 rounded-2xl text-[11px] font-black border border-slate-100 text-slate-600 active:scale-90 transition-all">°C</button>
+                </div>
+
+                <div class="flex flex-col items-center w-full px-6">
+                    <div id="profile-prompt" class="hidden w-full bg-amber-50 border border-amber-100 p-5 rounded-[2.5rem] mb-10 flex items-center justify-between shadow-sm animate-pulse">
+                        <div class="flex items-center gap-3 text-left">
+                            <span class="text-3xl">🧬</span>
+                            <div><p class="text-[10px] font-black text-amber-800 uppercase">Personalize Profile</p><p class="text-[11px] font-bold text-amber-700 italic">Adjust logic for Buddy's breed</p></div>
+                        </div>
+                        <button onclick="toggleSearch()" class="bg-amber-600 text-white text-[10px] font-black px-5 py-2 rounded-full uppercase shadow-sm">Go</button>
+                    </div>
+
+                    <div class="flex items-start mb-6">
+                        <span id="main-temp" class="text-[10rem] font-black tracking-tighter leading-none text-slate-900 drop-shadow-md">--°</span>
+                        <div id="main-icon" class="mt-14 ml-3 bg-white p-4 rounded-[2.5rem] shadow-2xl border border-slate-50 flex items-center justify-center min-w-[110px] min-h-[110px]"></div>
+                    </div>
+
+                    <div class="flex gap-4 mb-12">
+                        <div class="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-full border border-slate-100 text-[10px] font-black uppercase shadow-sm">
+                            <span class="opacity-30">Rise</span> <span id="rise-time" class="text-slate-800 italic font-bold">--:--</span>
+                        </div>
+                        <div class="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-full border border-slate-100 text-[10px] font-black uppercase shadow-sm">
+                            <span class="opacity-30">Set</span> <span id="set-time" class="text-slate-800 italic font-bold">--:--</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-5 w-full mb-10 text-left">
+                        <div id="idx-card" class="bg-slate-900 text-white p-8 rounded-[3.5rem] shadow-2xl relative overflow-hidden text-left">
+                            <p id="idx-label" class="text-[10px] font-black uppercase text-blue-400 mb-1 opacity-80 tracking-widest leading-none italic">Walking Index</p>
+                            <p id="idx-sub-label" class="text-[8px] font-bold text-white/30 uppercase tracking-widest mb-3">Tailored for Buddy</p>
+                            <p id="main-idx" class="text-5xl font-black italic tracking-tighter leading-none">--</p>
+                            <div class="w-full h-1.5 bg-white/10 mt-6 rounded-full overflow-hidden shadow-inner"><div id="idx-bar" class="bg-blue-400 h-full transition-all duration-1000" style="width:0%"></div></div>
+                        </div>
+                        <div class="bg-white border-2 border-slate-100 p-8 rounded-[3.5rem] shadow-sm relative overflow-hidden text-left group">
+                            <p class="text-[10px] font-black uppercase text-slate-400 mb-3 tracking-widest leading-none italic">Road Heat</p>
+                            <p id="main-road" class="text-5xl font-black text-slate-800 italic tracking-tighter leading-none">--°</p>
+                            <div class="w-full h-1.5 bg-slate-100 mt-6 rounded-full overflow-hidden shadow-inner"><div id="road-bar" class="bg-orange-400 h-full transition-all duration-1000" style="width:0%"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recommendation -->
+            <div class="mx-6 -mt-10 z-20 relative text-left">
+                <div id="safety-banner" class="bg-gradient-to-br from-slate-200 to-slate-300 rounded-[3.5rem] p-10 shadow-2xl text-white transition-all transform border border-white/20">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="space-y-1">
+                            <h2 id="hazard-label" class="text-[10px] font-black uppercase opacity-80 tracking-[0.25em]">Syncing...</h2>
+                            <p id="safety-level" class="text-6xl font-black italic uppercase leading-none tracking-tighter text-left text-white leading-none">WAIT</p>
+                        </div>
+                        <div id="banner-icon" class="bg-white/20 p-5 rounded-[2rem] border border-white/20 shadow-inner flex items-center justify-center text-white"></div>
+                    </div>
+                    <p id="safety-text" class="text-base font-bold opacity-95 leading-relaxed italic px-1 text-left italic">Analyzing metropolitan safety grid...</p>
+                </div>
+            </div>
+
+            <!-- Hourly Outlook -->
+            <div class="mt-16 px-6 text-left">
+                <div class="flex justify-between items-center mb-8 ml-2">
+                    <h3 class="text-[12px] font-black text-slate-400 uppercase tracking-[0.3em] italic text-left leading-none">Hourly Cycle</h3>
+                    <div class="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-full shadow-sm"><span class="text-[10px] font-black text-blue-500 uppercase leading-none">Swipe</span> <span class="text-blue-500 font-bold leading-none">→</span></div>
+                </div>
+                <div id="timeline" class="flex gap-5 overflow-x-auto pb-12 scrollbar-hide snap-x px-2"></div>
+            </div>
+        </div>
+
+        <!-- COMMUNITY VIEW -->
+        <div id="community-view" class="flex-1 overflow-y-auto scrollbar-hide pb-40 bg-white view-hidden p-6 pt-16">
+            <div class="flex justify-between items-end mb-10 px-2 text-left">
+                <div><h2 class="text-4xl font-black italic tracking-tighter text-slate-900 leading-none">Community</h2><p class="text-[9px] font-black text-blue-500 uppercase tracking-widest mt-2 italic">Local Help Grid</p></div>
+                <button onclick="togglePost()" class="bg-blue-600 text-white p-5 rounded-[2.2rem] shadow-xl active:scale-95 transition-all">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+                </button>
+            </div>
+            <div id="post-list" class="space-y-5"><div class="p-20 text-center text-slate-300 italic text-sm">Acquiring grid activity...</div></div>
+        </div>
+
+        <!-- DOCK -->
+        <div class="fixed bottom-6 left-6 right-6 dock-blur px-2 py-5 flex justify-around items-center rounded-[3.5rem] shadow-2xl z-[50]">
+            <button onclick="switchView('safety')" id="nav-safety" class="flex flex-col items-center gap-1.5 text-blue-600 w-20">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span class="text-[8px] font-black uppercase tracking-[0.2em]">Safety</span>
+            </button>
+            <button onclick="switchView('community')" id="nav-community" class="flex flex-col items-center gap-1.5 text-slate-400 w-20">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span class="text-[8px] font-black uppercase tracking-[0.2em]">Help</span>
+            </button>
+            <button onclick="toggleSearch()" class="flex flex-col items-center gap-1.5 text-slate-400 w-20">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 11V3M2 14h4M10 8h4M18 11h4"/></svg>
+                <span class="text-[8px] font-black uppercase tracking-[0.2em]">Setup</span>
+            </button>
+            <button onclick="toggleUrgent()" class="flex flex-col items-center gap-1.5 text-rose-500 w-20">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><circle cx="12" cy="17" r=".01"/></svg>
+                <span class="text-[8px] font-black uppercase tracking-[0.2em]">Urgent</span>
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'pawcast-v52';
+
+        let user = null, weatherData = null, deferredPrompt = null;
+        let currentUnit = 'C', currentCoords = { lat: 22.3193, lon: 114.1694 }, currentLocation = "Hong Kong";
+        let dogMultiplier = 1.0, dogName = "Buddy", coatLabel = "Standard", postType = 'need';
+
+        const icons = {
+            sun: `<svg class="text-amber-500" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>`,
+            cloud: `<svg class="text-slate-400" width="48" height="48" viewBox="-2 -2 28 28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M17.5 19a4.5 4.5 0 0 0 0-9h-1.3a7 7 0 1 0-13.7 3h1a4.5 4.5 0 0 0 0 9h14z"/></svg>`,
+            fog: `<svg class="text-slate-300" width="48" height="48" viewBox="-2 -2 28 28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 10h16M4 14h16M6 18h12M8 6h8"/></svg>`,
+            moon: `<svg class="text-indigo-400" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>`,
+            rain: `<svg class="text-blue-400" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M17 10h-1.3a7 7 0 1 0-13.7 3h1M16 13a4 4 0 0 0-8 0M8 16v.01M12 16v.01M16 16v.01M8 20v.01M12 20v.01M16 20v.01"/></svg>`,
+            check: `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 6 9 17l-5-5"/></svg>`,
+            alert: `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/></svg>`
+        };
+
+        function showToast(msg, icon = "✨") {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            document.getElementById('toast-icon').innerText = icon;
+            t.classList.add('toast-active'); t.style.opacity = "1";
+            setTimeout(() => { t.classList.remove('toast-active'); t.style.opacity = "0"; }, 3000);
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
+        window.triggerInstall = async () => { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then(()=> deferredPrompt = null); } else { showToast("Use ⋮ > Install App", "⚙️"); } };
+
+        signInAnonymously(auth).then(() => { onAuthStateChanged(auth, (u) => { user = u; if(user) listenToCommunity(); }); });
+
+        function listenToCommunity() {
+            const col = collection(db, 'artifacts', appId, 'public', 'data', 'community');
+            onSnapshot(col, (snap) => {
+                const posts = [];
+                snap.forEach(doc => posts.push(doc.data()));
+                posts.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+                renderPosts(posts);
+            });
+        }
+
+        async function submitPost() {
+            if(!user) return;
+            const msg = document.getElementById('post-msg').value, meet = document.getElementById('post-location').value, dur = document.getElementById('post-duration').value;
+            if(!msg || !meet) return showToast("Details missing", "⚠️");
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'community'), {
+                    userId: user.uid, dogName, coatLabel, type: postType, message: msg, meetAt: meet, duration: dur, location: currentLocation, createdAt: serverTimestamp()
+                });
+                document.getElementById('post-msg').value = ""; document.getElementById('post-location').value = "";
+                togglePost(); showToast("Broadcasted to Grid", "🛰️");
+            } catch(e) { showToast("Post Error", "❌"); }
+        }
+
+        function renderPosts(posts) {
+            const list = document.getElementById('post-list');
+            list.innerHTML = posts.length ? "" : '<div class="p-20 text-center text-slate-300 italic text-sm">No activity in this grid sector.</div>';
+            posts.forEach(p => {
+                const isNeed = p.type === 'need';
+                const card = document.createElement('div');
+                card.className = `p-7 rounded-[3rem] shadow-sm flex flex-col gap-4 ${isNeed ? 'bg-blue-50/40 border border-blue-100/50' : 'bg-emerald-50/40 border border-emerald-100/50'}`;
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-white w-10 h-10 rounded-2xl flex items-center justify-center border border-slate-50 text-lg">🐾</div>
+                            <div><p class="text-xs font-black text-slate-900 leading-none">${p.dogName}</p><p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1.5">${p.coatLabel}</p></div>
+                        </div>
+                        <span class="px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest ${isNeed ? 'bg-blue-600 text-white shadow-md shadow-blue-100' : 'bg-emerald-600 text-white shadow-md shadow-emerald-100'}">${isNeed ? 'Need Walk' : 'Offering'}</span>
+                    </div>
+                    <p class="text-[14px] font-bold text-slate-700 leading-relaxed italic">"${p.message}"</p>
+                    <div class="grid grid-cols-2 gap-2 pt-3 border-t border-slate-200/20 text-[9px] font-black uppercase tracking-widest text-slate-400">
+                        <div class="flex items-center gap-1"><span>📍</span> ${p.meetAt || 'Nearby'}</div>
+                        <div class="flex items-center gap-1 justify-end"><span>🕒</span> ${p.duration || 'Flexible'}</div>
+                    </div>`;
+                list.appendChild(card);
+            });
+        }
+
+        window.saveProfile = () => {
+            const nameIn = document.getElementById('dog-name'), coatIn = document.getElementById('dog-coat');
+            dogName = nameIn.value || "Buddy"; dogMultiplier = parseFloat(coatIn.value); coatLabel = coatIn.options[coatIn.selectedIndex].getAttribute('data-label');
+            localStorage.setItem('pawcast_dog_name', dogName); localStorage.setItem('pawcast_dog_multiplier', dogMultiplier); localStorage.setItem('pawcast_coat_label', coatLabel);
+            if(weatherData) renderUI(); toggleSearch(); showToast(`${dogName}'s bio active`, "🧬");
+        };
+
+        window.loadProfile = () => {
+            const savedName = localStorage.getItem('pawcast_dog_name'), savedMult = localStorage.getItem('pawcast_dog_multiplier'), savedLabel = localStorage.getItem('pawcast_coat_label');
+            if(savedName) { dogName = savedName; document.getElementById('dog-name').value = dogName; }
+            if(savedMult) { dogMultiplier = parseFloat(savedMult); document.getElementById('dog-coat').value = dogMultiplier; }
+            if(savedLabel) coatLabel = savedLabel;
+        };
+
+        window.toggleSearch = () => document.getElementById('search-overlay').classList.toggle('hidden');
+        window.toggleUrgent = () => document.getElementById('urgent-overlay').classList.toggle('hidden');
+        window.togglePost = () => document.getElementById('post-overlay').classList.toggle('hidden');
+        window.setPostType = (t) => {
+            postType = t;
+            document.getElementById('type-need').className = t==='need' ? 'bg-blue-600 text-white p-5 rounded-[2rem] font-black text-[10px] uppercase tracking-widest border-2 border-blue-600 shadow-lg' : 'bg-white text-slate-400 p-5 rounded-[2rem] font-black text-[10px] uppercase tracking-widest border-2 border-slate-100';
+            document.getElementById('type-offer').className = t==='offer' ? 'bg-emerald-600 text-white p-5 rounded-[2rem] font-black text-[10px] uppercase tracking-widest border-2 border-emerald-600 shadow-lg' : 'bg-white text-slate-400 p-5 rounded-[2rem] font-black text-[10px] uppercase tracking-widest border-2 border-slate-100';
+        };
+
+        window.switchView = (v) => {
+            document.getElementById('safety-view').classList.toggle('view-hidden', v !== 'safety');
+            document.getElementById('community-view').classList.toggle('view-hidden', v !== 'community');
+            document.getElementById('nav-safety').classList.toggle('text-blue-600', v === 'safety'); document.getElementById('nav-safety').classList.toggle('text-slate-400', v !== 'safety');
+            document.getElementById('nav-community').classList.toggle('text-blue-600', v === 'community'); document.getElementById('nav-community').classList.toggle('text-slate-400', v !== 'community');
+            if(v==='community') showToast("Grid Hub Online", "👥");
+        };
+
+        window.calculateSafety = (tempC, hum, code, isDay, stationTimeStr) => {
+            const tempF = tempC * 9/5 + 32, hour = stationTimeStr ? parseInt(stationTimeStr.split('T')[1].split(':')[0]) : 12;
+            const hourDist = Math.abs(hour - 13);
+            let solarFactor = Math.max(0, 1 - (hourDist / 7));
+            const cloudFactor = (code >= 1 && code <= 3) ? 0.4 : (code >= 60 ? 0.2 : 1.0);
+            const road = isDay ? tempC + (solarFactor * cloudFactor * 23) + 2 : tempC + 4;
+            const heatScore = Math.round((tempF + (hum * 0.6)) * dogMultiplier);
+            let lvl = "safe", hz = "", grad = "from-emerald-400 to-teal-500", txt = "Ideal Range";
+            if (tempC < 0) { lvl = "avoid"; grad = "from-blue-400 to-indigo-600"; hz = "Frost Risk"; txt = "Freezing surface. Pads at risk."; return { lvl, hz, grad, road, idx: Math.abs(Math.round(tempC * 10)), txt }; }
+            if (heatScore >= 158 || tempC > 31 || road >= 50) { lvl = "danger"; grad = "from-rose-500 to-red-600"; hz = road >= 50 ? "Road Burn" : "Metabolic Stress"; txt = `Critical risk for ${dogName}. Avoid walk.`; }
+            else if (heatScore >= 143 || tempC > 29 || road >= 43) { lvl = "avoid"; grad = "from-orange-400 to-orange-600"; hz = road >= 43 ? "Hot Surface" : "Tropical Heat"; txt = `Caution: Limits reached for ${dogName}.`; }
+            else if (heatScore >= 130 || tempC > 26) { lvl = "caution"; grad = "from-amber-400 to-amber-500"; hz = "Warm Air"; txt = `Monitor ${dogName} for heavy panting.`; }
+            return { lvl, hz, grad, road, idx: heatScore, txt };
+        };
+
+        async function initAutoLoc() {
+            document.getElementById('current-loc').innerText = "Locating...";
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (pos) => {
+                    const lat = pos.coords.latitude, lon = pos.coords.longitude;
+                    try {
+                        const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+                        const geoData = await geoRes.json();
+                        currentLocation = geoData.address.city || geoData.address.town || geoData.address.suburb || "My Grid";
+                        fetchWeather(lat, lon, currentLocation, "auto");
+                        document.getElementById('loc-icon').innerText = "🛰️";
+                        showToast(`Located: ${currentLocation}`, "📍");
+                    } catch(e) { fallbackLoc(); }
+                }, () => fallbackLoc());
+            } else { fallbackLoc(); }
+        }
+
+        function fallbackLoc() { fetchWeather(22.3193, 114.1694, "Hong Kong", "Asia/Hong_Kong"); document.getElementById('loc-icon').innerText = "📍"; }
+
+        async function fetchWeather(lat, lon, name, tz) {
+            try {
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,is_day&hourly=temperature_2m,relative_humidity_2m,weather_code,precipitation_probability,is_day&daily=sunrise,sunset&timezone=${encodeURIComponent(tz)}&forecast_days=2`;
+                const res = await fetch(url); const d = await res.json();
+                weatherData = d; currentCoords = { lat, lon }; document.getElementById('current-loc').innerText = name; renderUI();
+                document.getElementById('sync-time').innerText = "Sync: OK"; document.getElementById('loc-loader').style.opacity = '0'; setTimeout(() => document.getElementById('loc-loader').style.display = 'none', 500);
+            } catch(e) { document.getElementById('sync-time').innerText = "Sync Failed"; }
+        }
+
+        function renderUI() {
+            if (!weatherData) return;
+            const d = weatherData, cur = d.current, fmt = (c) => currentUnit === 'F' ? Math.round(c * 9/5 + 32) : Math.round(c);
+            const startIndex = d.hourly.time.findIndex(t => t.startsWith(cur.time.split(':')[0] + ":00")) || 0;
+            const s = calculateSafety(cur.temperature_2m, cur.relative_humidity_2m, cur.weather_code, cur.is_day === 1, cur.time);
+            document.getElementById('dash-dog-label').innerText = `${dogName} • ${coatLabel}`;
+            document.getElementById('profile-prompt').style.display = dogName === "Buddy" ? 'flex' : 'none';
+            document.getElementById('main-temp').innerText = fmt(cur.temperature_2m) + "°";
+            document.getElementById('rise-time').innerText = d.daily.sunrise[0].split('T')[1];
+            document.getElementById('set-time').innerText = d.daily.sunset[0].split('T')[1];
+            document.getElementById('main-idx').innerText = s.idx;
+            document.getElementById('idx-bar').style.width = Math.min((s.idx / 180) * 100, 100) + "%";
+            document.getElementById('main-road').innerText = fmt(s.road) + "°";
+            document.getElementById('road-bar').style.width = Math.min(((s.road + 20) / 80) * 100, 100) + "%";
+            document.getElementById('safety-banner').className = `bg-gradient-to-br ${s.grad} rounded-[3.5rem] p-10 shadow-2xl text-white transition-all transform text-left border border-white/20`;
+            document.getElementById('hazard-label').innerText = s.hz || "Grid Synchronized";
+            document.getElementById('safety-level').innerText = s.lvl; document.getElementById('safety-text').innerText = s.txt;
+            document.getElementById('banner-icon').innerHTML = s.lvl === 'safe' ? icons.check : icons.alert;
+            document.getElementById('main-icon').innerHTML = (c => { if(c >= 60) return icons.rain; if(c >= 1 && c <= 3) return icons.cloud; if(c === 45 || c === 48) return icons.fog; return cur.is_day ? icons.sun : icons.moon; })(cur.weather_code);
+            const timeline = document.getElementById('timeline'); timeline.innerHTML = "";
+            for(let i = startIndex; i < startIndex + 12 && i < d.hourly.time.length; i++) {
+                const hT = d.hourly.temperature_2m[i], hC = d.hourly.weather_code[i], hD = d.hourly.is_day[i] === 1, hTime = d.hourly.time[i], hH = d.hourly.relative_humidity_2m[i];
+                const hS = calculateSafety(hT, hH, hC, hD, hTime);
+                const card = document.createElement('div');
+                card.className = `min-w-[155px] p-8 rounded-[3.5rem] border snap-start flex flex-col items-center shadow-sm transition-all ${hS.lvl==='safe'?'bg-emerald-50 border-emerald-100 ring-8 ring-emerald-500/5':'bg-white border-slate-100'}`;
+                card.innerHTML = `<span class="text-[10px] font-black text-slate-400 uppercase mb-6 italic text-left w-full">${hTime.split('T')[1]}</span><div class="mb-6 scale-90">${(c => { if(c >= 60) return icons.rain; if(c >= 1 && c <= 3) return icons.cloud; if(c === 45 || c === 48) return icons.fog; return hD ? icons.sun : icons.moon; })(hC)}</div><div class="text-center mb-8"><p class="text-3xl font-black text-slate-900 leading-none">${fmt(hT)}°</p><p class="text-[9px] font-black uppercase mt-2 ${hS.lvl === 'safe' ? 'text-emerald-500' : 'text-slate-400'}">${hS.lvl}</p></div><div class="w-full pt-6 border-t border-slate-100 space-y-3 text-[10px] font-black text-slate-400 text-left"><div class="flex justify-between items-center"><span class="opacity-30 text-[8px]">Index</span><span class="text-blue-500 font-bold">${hS.idx}</span></div><div class="flex justify-between items-center"><span class="opacity-30 text-[8px]">Road</span><span class="text-orange-500 font-bold">${fmt(hS.road)}°</span></div></div>`;
+                timeline.appendChild(card);
+            }
+        }
+
+        window.submitPost = submitPost;
+        window.initAutoLoc = initAutoLoc;
+        window.toggleUnit = () => { currentUnit = currentUnit === 'C' ? 'F' : 'C'; document.getElementById('unit-toggle').innerText = '°' + currentUnit; if(weatherData) renderUI(); };
+        document.getElementById('search-form').onsubmit = async (e) => { e.preventDefault(); const val = document.getElementById('search-input').value; if (!val) return; try { const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(val)}&count=1`); const d = await res.json(); if (d.results?.[0]) { fetchWeather(d.results[0].latitude, d.results[0].longitude, d.results[0].name, d.results[0].timezone); toggleSearch(); document.getElementById('search-input').value = ""; } } catch(e) { } };
+
+        loadProfile(); initAutoLoc();
+    </script>
+</body>
+</html>
